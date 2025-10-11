@@ -1,6 +1,6 @@
-package com.ecommerce.domain.order;
+package com.ecommerce.platform.domain.order;
 
-import com.ecommerce.domain.product.Product;
+import com.ecommerce.platform.domain.product.Product;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
