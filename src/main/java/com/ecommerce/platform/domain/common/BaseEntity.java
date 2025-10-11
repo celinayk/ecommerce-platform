@@ -1,4 +1,4 @@
-package com.ecommerce.domain.common;
+package com.ecommerce.platform.domain.common;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;

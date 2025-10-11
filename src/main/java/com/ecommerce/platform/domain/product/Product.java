@@ -1,6 +1,6 @@
-package com.ecommerce.domain.product;
+package com.ecommerce.platform.domain.product;
 
-import com.ecommerce.domain.common.BaseEntity;
+import com.ecommerce.platform.domain.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

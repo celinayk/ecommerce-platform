@@ -1,7 +1,7 @@
-package com.ecommerce.domain.order;
+package com.ecommerce.platform.domain.order;
 
-import com.ecommerce.domain.common.BaseEntity;
-import com.ecommerce.domain.user.User;
+import com.ecommerce.platform.domain.common.BaseEntity;
+import com.ecommerce.platform.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

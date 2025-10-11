@@ -1,4 +1,4 @@
-package com.ecommerce.domain.product;
+package com.ecommerce.platform.domain.product;
 
 public enum ProductStatus {
   AVAILABLE,      // 판매중

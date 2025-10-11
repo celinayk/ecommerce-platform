@@ -1,6 +1,6 @@
-package com.ecommerce.domain.user;
+package com.ecommerce.platform.domain.user.entity;
 
-import com.ecommerce.domain.common.BaseEntity;
+import com.ecommerce.platform.domain.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -24,19 +24,16 @@ public class User extends BaseEntity {
   @Column(nullable = false, length = 100)
   private String name;
 
-  @Column(length = 20)
-  private String phone;
 
   @Enumerated(EnumType.STRING)
   @Column(nullable = false, length = 20)
   private Role role = Role.USER;
 
-  public static User createUser(String email, String password, String name, String phone) {
+  public static User createUser(String email, String password, String name) {
     User user = new User();
     user.email = email;
     user.password = password;
     user.name = name;
-    user.phone = phone;
     user.role = Role.USER;
     return user;
   }
