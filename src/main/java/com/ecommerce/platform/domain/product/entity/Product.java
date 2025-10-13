@@ -1,15 +1,17 @@
-package com.ecommerce.platform.domain.product;
+package com.ecommerce.platform.domain.product.entity;
 
 import com.ecommerce.platform.domain.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 
 @Entity
 @Table(name = "products")
 @Getter
+@Setter
 @NoArgsConstructor
 public class Product extends BaseEntity {
 
@@ -33,15 +35,6 @@ public class Product extends BaseEntity {
   @Column(nullable = false, length = 20)
   private ProductStatus status = ProductStatus.AVAILABLE;
 
-  public static Product createProduct(String name, String description, BigDecimal price, Integer stockQuantity) {
-    Product product = new Product();
-    product.name = name;
-    product.description = description;
-    product.price = price;
-    product.stockQuantity = stockQuantity;
-    product.status = ProductStatus.AVAILABLE;
-    return product;
-  }
 
   // 재고 감소
   public void decreaseStock(int quantity) {
