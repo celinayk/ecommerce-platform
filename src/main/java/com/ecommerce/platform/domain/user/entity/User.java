@@ -4,10 +4,12 @@ import com.ecommerce.platform.domain.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name="users")
 @Getter
+@Setter
 @NoArgsConstructor
 public class User extends BaseEntity {
 
@@ -24,18 +26,10 @@ public class User extends BaseEntity {
   @Column(nullable = false, length = 100)
   private String name;
 
-
   @Enumerated(EnumType.STRING)
   @Column(nullable = false, length = 20)
   private Role role = Role.USER;
 
-  public static User createUser(String email, String password, String name) {
-    User user = new User();
-    user.email = email;
-    user.password = password;
-    user.name = name;
-    user.role = Role.USER;
-    return user;
-  }
+
 
 }

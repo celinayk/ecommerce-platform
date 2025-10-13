@@ -23,10 +23,12 @@ class UserServiceTest {
   UserRepository userRepository;
 
   @Test
-  @DisplayName("회원가입을 할 수 있다")
-  void signup() {
+  void 회원가입() {
     // given
-    User user = User.createUser("test@example.com", "password123", "테스트유저");
+    User user = new User();
+    user.setEmail("test@example.com");
+    user.setPassword("password123");
+    user.setName("테스트유저");
 
     // when
     User savedUser = userService.signup(user);
@@ -39,12 +41,18 @@ class UserServiceTest {
 
   @Test
   @DisplayName("중복된 이메일로 회원가입시 예외가 발생한다")
-  void signup_duplicateEmail() {
+  void 중복회원예외() {
     // given
-    User user1 = User.createUser("duplicate@example.com", "password123", "유저1");
+    User user1 = new User();
+    user1.setEmail("duplicate@example.com");
+    user1.setPassword("password123");
+    user1.setName("유저1");
     userService.signup(user1);
 
-    User user2 = User.createUser("duplicate@example.com", "password456", "유저2");
+    User user2 = new User();
+    user2.setEmail("duplicate@example.com");
+    user2.setPassword("password456");
+    user2.setName("유저2");
 
     // when & then
     assertThatThrownBy(() -> userService.signup(user2))
@@ -52,14 +60,20 @@ class UserServiceTest {
         .hasMessage("이미 존재하는 이메일입니다.");
   }
 
-
-
   @Test
   @DisplayName("전체 회원을 조회할 수 있다")
   void findAllUser() {
     // given
-    User user1 = User.createUser("user1@example.com", "password1", "유저1");
-    User user2 = User.createUser("user2@example.com", "password2", "유저2");
+    User user1 = new User();
+    user1.setEmail("user1@example.com");
+    user1.setPassword("password1");
+    user1.setName("유저1");
+
+    User user2 = new User();
+    user2.setEmail("user2@example.com");
+    user2.setPassword("password2");
+    user2.setName("유저2");
+
     userRepository.save(user1);
     userRepository.save(user2);
 
