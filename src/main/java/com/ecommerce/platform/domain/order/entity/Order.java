@@ -1,4 +1,4 @@
-package com.ecommerce.platform.domain.order;
+package com.ecommerce.platform.domain.order.entity;
 
 import com.ecommerce.platform.domain.common.BaseEntity;
 import com.ecommerce.platform.domain.user.entity.User;
@@ -26,18 +26,12 @@ public class Order extends BaseEntity {
   @JoinColumn(name = "user_id", nullable = false)
   private User user;
 
-  @Column(nullable = false, unique = true, length = 50)
-  private String orderNumber;
-
-  @Column(nullable = false, precision = 10, scale = 2)
-  private BigDecimal totalAmount;
+  @Column(nullable = false)
+  private Integer totalAmount;
 
   @Enumerated(EnumType.STRING)
   @Column(nullable = false, length = 20)
   private OrderStatus status = OrderStatus.ORDER;  // 기본값 ORDER
-
-  @Column(length = 20)
-  private String paymentMethod;
 
   @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
   private List<OrderItem> orderItems = new ArrayList<>();
@@ -53,17 +47,18 @@ public class Order extends BaseEntity {
   private void calculateTotalAmount() {
     this.totalAmount = orderItems.stream()
         .map(OrderItem::getSubtotal)
-        .reduce(BigDecimal.ZERO, BigDecimal::add);
+        .reduce(0, Integer::sum);
   }
 
   // 생성 메서드
-  public static Order createOrder(User user, String orderNumber, String paymentMethod) {
+  public static Order createOrder(User user, List<OrderItem> orderItems) {
     Order order = new Order();
-    order.user = user;
-    order.orderNumber = orderNumber;
-    order.paymentMethod = paymentMethod;
-    order.totalAmount = BigDecimal.ZERO;  // 처음엔 0, 나중에 계산
-    order.status = OrderStatus.ORDER;
+    order.setUser(user);
+    order.setTotalAmount(0);
+    for (OrderItem orderItem : orderItems) {
+      order.addOrderItem(orderItem);
+    }
+    order.setStatus(OrderStatus.ORDER);
     return order;
   }
 

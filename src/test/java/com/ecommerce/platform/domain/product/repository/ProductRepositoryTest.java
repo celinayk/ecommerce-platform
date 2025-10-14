@@ -26,7 +26,7 @@ class ProductRepositoryTest {
     Product product = new Product();
     product.setName("테스트 상품");
     product.setDescription("상품 설명");
-    product.setPrice(BigDecimal.valueOf(10000));
+    product.setPrice(10000);
     product.setStockQuantity(100);
     product.setStatus(ProductStatus.AVAILABLE);
 
@@ -47,7 +47,7 @@ class ProductRepositoryTest {
     Product product = new Product();
     product.setName("조회 상품");
     product.setDescription("설명");
-    product.setPrice(BigDecimal.valueOf(5000));
+    product.setPrice(5000);
     product.setStockQuantity(50);
     Product savedProduct = productRepository.save(product);
 
@@ -67,13 +67,13 @@ class ProductRepositoryTest {
     Product product1 = new Product();
     product1.setName("상품1");
     product1.setDescription("설명1");
-    product1.setPrice(BigDecimal.valueOf(1000));
+    product1.setPrice(1000);
     product1.setStockQuantity(10);
 
     Product product2 = new Product();
     product2.setName("상품2");
     product2.setDescription("설명2");
-    product2.setPrice(BigDecimal.valueOf(2000));
+    product2.setPrice(2000);
     product2.setStockQuantity(20);
 
     productRepository.save(product1);
@@ -93,7 +93,7 @@ class ProductRepositoryTest {
     Product product = new Product();
     product.setName("삭제 상품");
     product.setDescription("설명");
-    product.setPrice(BigDecimal.valueOf(3000));
+    product.setPrice(3000);
     product.setStockQuantity(30);
     Product savedProduct = productRepository.save(product);
 

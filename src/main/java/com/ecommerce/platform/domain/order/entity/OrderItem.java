@@ -1,15 +1,17 @@
-package com.ecommerce.platform.domain.order;
+package com.ecommerce.platform.domain.order.entity;
 
 import com.ecommerce.platform.domain.product.entity.Product;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 
 @Entity
 @Table(name = "order_items")
 @Getter
+@Setter
 @NoArgsConstructor
 public class OrderItem {
 
@@ -25,25 +27,24 @@ public class OrderItem {
   @JoinColumn(name = "product_id", nullable = false)
   private Product product;
 
-  @Column(nullable = false, precision = 10, scale = 2)
-  private BigDecimal price;
+  @Column(nullable = false)
+  private Integer price;
 
   @Column(nullable = false)
   private Integer quantity;
 
-  @Column(nullable = false, precision = 10, scale = 2)
-  private BigDecimal subtotal;
+  @Column(nullable = false)
+  private Integer subtotal;
 
   // 생성 메서드
   public static OrderItem createOrderItem(Product product, int quantity) {
     // 재고 감소
     product.decreaseStock(quantity);
-
     OrderItem orderItem = new OrderItem();
-    orderItem.product = product;
-    orderItem.price = product.getPrice();
-    orderItem.quantity = quantity;
-    orderItem.subtotal = product.getPrice().multiply(BigDecimal.valueOf(quantity));
+    orderItem.setProduct(product);
+    orderItem.setQuantity(quantity);
+    orderItem.setPrice(product.getPrice());
+    orderItem.setSubtotal(product.getPrice() * quantity);
     return orderItem;
   }
 
@@ -52,9 +53,7 @@ public class OrderItem {
     getProduct().increaseStock(quantity);
   }
 
-  // 연관관계 편의 메서드
-  protected void setOrder(Order order) {
-    this.order = order;
-  }
+
+
 
 }
