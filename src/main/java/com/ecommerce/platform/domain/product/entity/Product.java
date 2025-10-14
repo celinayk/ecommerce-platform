@@ -25,8 +25,8 @@ public class Product extends BaseEntity {
   @Column(columnDefinition = "TEXT")
   private String description;
 
-  @Column(nullable = false, precision = 10, scale = 2)
-  private BigDecimal price;
+  @Column(nullable = false)
+  private Integer price;
 
   @Column(nullable = false)
   private Integer stockQuantity = 0;
