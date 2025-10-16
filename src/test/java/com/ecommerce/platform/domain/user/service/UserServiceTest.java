@@ -1,5 +1,7 @@
 package com.ecommerce.platform.domain.user.service;
 
+import com.ecommerce.platform.domain.user.dto.UserResponse;
+import com.ecommerce.platform.domain.user.dto.UserSignupRequest;
 import com.ecommerce.platform.domain.user.entity.User;
 import com.ecommerce.platform.domain.user.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;
@@ -25,37 +27,36 @@ class UserServiceTest {
   @Test
   void 회원가입() {
     // given
-    User user = new User();
-    user.setEmail("test@example.com");
-    user.setPassword("password123");
-    user.setName("테스트유저");
+    UserSignupRequest request = new UserSignupRequest();
+    request.setEmail("test@example.com");
+    request.setPassword("password123");
+    request.setName("테스트유저");
 
     // when
-    User savedUser = userService.signup(user);
+    UserResponse response = userService.signup(request);
 
     // then
-    assertThat(savedUser.getId()).isEqualTo(user.getId());
-    assertThat(savedUser.getEmail()).isEqualTo("test@example.com");
-    assertThat(savedUser.getName()).isEqualTo("테스트유저");
+    assertThat(response.getEmail()).isEqualTo("test@example.com");
+    assertThat(response.getName()).isEqualTo("테스트유저");
   }
 
   @Test
   @DisplayName("중복된 이메일로 회원가입시 예외가 발생한다")
   void 중복회원예외() {
     // given
-    User user1 = new User();
-    user1.setEmail("duplicate@example.com");
-    user1.setPassword("password123");
-    user1.setName("유저1");
-    userService.signup(user1);
+    UserSignupRequest request1 = new UserSignupRequest();
+    request1.setEmail("duplicate@example.com");
+    request1.setPassword("password123");
+    request1.setName("유저1");
+    userService.signup(request1);
 
-    User user2 = new User();
-    user2.setEmail("duplicate@example.com");
-    user2.setPassword("password456");
-    user2.setName("유저2");
+    UserSignupRequest request2 = new UserSignupRequest();
+    request2.setEmail("duplicate@example.com");
+    request2.setPassword("password456");
+    request2.setName("유저2");
 
     // when & then
-    assertThatThrownBy(() -> userService.signup(user2))
+    assertThatThrownBy(() -> userService.signup(request2))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("이미 존재하는 이메일입니다.");
   }
@@ -78,9 +79,9 @@ class UserServiceTest {
     userRepository.save(user2);
 
     // when
-    List<User> users = userService.findAllUser();
+    List<UserResponse> responses = userService.findAllUser();
 
     // then
-    assertThat(users).hasSizeGreaterThanOrEqualTo(2);
+    assertThat(responses).hasSizeGreaterThanOrEqualTo(2);
   }
 }
