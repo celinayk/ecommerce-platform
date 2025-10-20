@@ -1,7 +1,8 @@
 package com.ecommerce.platform.domain.order.service;
 
+import com.ecommerce.platform.domain.order.dto.OrderRequest;
+import com.ecommerce.platform.domain.order.dto.OrderResponse;
 import com.ecommerce.platform.domain.order.entity.Order;
-import com.ecommerce.platform.domain.order.entity.OrderItem;
 import com.ecommerce.platform.domain.order.entity.OrderStatus;
 import com.ecommerce.platform.domain.order.repository.OrderRepository;
 import com.ecommerce.platform.domain.product.entity.Product;
@@ -9,15 +10,15 @@ import com.ecommerce.platform.domain.product.entity.ProductStatus;
 import com.ecommerce.platform.domain.product.repository.ProductRepository;
 import com.ecommerce.platform.domain.user.entity.User;
 import com.ecommerce.platform.domain.user.repository.UserRepository;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
+import com.ecommerce.platform.global.common.exception.CustomException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -37,21 +38,68 @@ class OrderServiceTest {
 
 
   @Test
-  void 상품주문() {
+  void 주문생성() {
     // given
     User user = createUser();
     Product product = createProduct("테스트상품", 10000, 10);
-    int orderCount = 2;
+
+    OrderRequest request = new OrderRequest();
+    request.setUserId(user.getId());
+    request.setProductId(product.getId());
+    request.setCount(2);
 
     // when
-    Long orderId = orderService.order(user.getId(), product.getId(), orderCount);
+    OrderResponse response = orderService.createOrder(request);
 
     // then
-    Order findOrder = orderRepository.findById(orderId).orElseThrow();
-    assertThat(findOrder.getStatus()).isEqualTo(OrderStatus.ORDER);
-    assertThat(findOrder.getOrderItems()).hasSize(1);
-    assertThat(findOrder.getTotalAmount()).isEqualTo(20000);
+    assertThat(response.getStatus()).isEqualTo(OrderStatus.ORDER);
+    assertThat(response.getOrderItems()).hasSize(1);
+    assertThat(response.getTotalAmount()).isEqualTo(20000);
     assertThat(product.getStockQuantity()).isEqualTo(8); // 재고 감소 확인
+  }
+
+  @Test
+  void 주문목록조회() {
+    // given
+    User user = createUser();
+    Product product = createProduct("테스트상품", 10000, 10);
+
+    for (int i = 0; i < 5; i++) {
+      OrderRequest request = new OrderRequest();
+      request.setUserId(user.getId());
+      request.setProductId(product.getId());
+      request.setCount(1);
+      orderService.createOrder(request);
+    }
+
+    Pageable pageable = PageRequest.of(0, 10);
+
+    // when
+    Page<OrderResponse> responses = orderService.getAllOrders(pageable);
+
+    // then
+    assertThat(responses.getContent()).hasSizeGreaterThanOrEqualTo(5);
+  }
+
+  @Test
+  void 주문상세조회() {
+    // given
+    User user = createUser();
+    Product product = createProduct("테스트상품", 10000, 10);
+
+    OrderRequest request = new OrderRequest();
+    request.setUserId(user.getId());
+    request.setProductId(product.getId());
+    request.setCount(2);
+    OrderResponse createdOrder = orderService.createOrder(request);
+
+    // when
+    OrderResponse response = orderService.getOrderById(createdOrder.getId());
+
+    // then
+    assertThat(response.getId()).isEqualTo(createdOrder.getId());
+    assertThat(response.getUserId()).isEqualTo(user.getId());
+    assertThat(response.getOrderItems()).hasSize(1);
   }
 
   @Test
@@ -60,14 +108,18 @@ class OrderServiceTest {
     User user = createUser();
     Product product = createProduct("테스트상품", 10000, 10);
 
-    Long orderId = orderService.order(user.getId(), product.getId(), 2);
+    OrderRequest request = new OrderRequest();
+    request.setUserId(user.getId());
+    request.setProductId(product.getId());
+    request.setCount(2);
+    OrderResponse createdOrder = orderService.createOrder(request);
 
     // when
-    orderService.cancelOrder(orderId);
+    orderService.cancelOrder(createdOrder.getId());
 
     // then
-    Order findOrder = orderRepository.findById(orderId).orElseThrow();
-    assertThat(findOrder.getStatus()).isEqualTo(OrderStatus.CANCEL);
+    OrderResponse canceledOrder = orderService.getOrderById(createdOrder.getId());
+    assertThat(canceledOrder.getStatus()).isEqualTo(OrderStatus.CANCEL);
     assertThat(product.getStockQuantity()).isEqualTo(10); // 재고 복구 확인
   }
 
@@ -77,11 +129,16 @@ class OrderServiceTest {
     User user = createUser();
     Product product = createProduct("테스트상품", 10000, 10);
 
-    Long orderId = orderService.order(user.getId(), product.getId(), 2);
-    orderService.cancelOrder(orderId);
+    OrderRequest request = new OrderRequest();
+    request.setUserId(user.getId());
+    request.setProductId(product.getId());
+    request.setCount(2);
+    OrderResponse createdOrder = orderService.createOrder(request);
+
+    orderService.cancelOrder(createdOrder.getId());
 
     // when & then
-    assertThatThrownBy(() -> orderService.cancelOrder(orderId))
+    assertThatThrownBy(() -> orderService.cancelOrder(createdOrder.getId()))
         .isInstanceOf(IllegalStateException.class)
         .hasMessage("이미 취소된 주문입니다.");
   }
@@ -92,28 +149,21 @@ class OrderServiceTest {
     User user = createUser();
     Product product = createProduct("테스트상품", 10000, 10);
 
-    int orderCount = 11; // 재고보다 많은 수량
+    OrderRequest request = new OrderRequest();
+    request.setUserId(user.getId());
+    request.setProductId(product.getId());
+    request.setCount(11); // 재고보다 많은 수량
 
     // when & then
-    assertThatThrownBy(() -> orderService.order(user.getId(), product.getId(), orderCount))
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("재고가 부족합니다.");
+    assertThatThrownBy(() -> orderService.createOrder(request))
+        .isInstanceOf(CustomException.class);
   }
 
   @Test
-  void 주문조회() {
-    // given
-    User user = createUser();
-    Product product = createProduct("테스트상품", 10000, 10);
-    Long orderId = orderService.order(user.getId(), product.getId(), 2);
-
-    // when
-    Order findOrder = orderService.findOrder(orderId);
-
-    // then
-    assertThat(findOrder.getId()).isEqualTo(orderId);
-    assertThat(findOrder.getUser()).isEqualTo(user);
-    assertThat(findOrder.getOrderItems()).hasSize(1);
+  void 존재하지않는주문조회시예외발생() {
+    // when & then
+    assertThatThrownBy(() -> orderService.getOrderById(999L))
+        .isInstanceOf(CustomException.class);
   }
 
   private User createUser() {
