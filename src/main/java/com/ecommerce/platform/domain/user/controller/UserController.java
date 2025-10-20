@@ -4,6 +4,7 @@ import com.ecommerce.platform.domain.user.dto.UserLoginRequest;
 import com.ecommerce.platform.domain.user.dto.UserResponse;
 import com.ecommerce.platform.domain.user.dto.UserSignupRequest;
 import com.ecommerce.platform.domain.user.service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,14 +21,14 @@ public class UserController {
 
   // 회원가입
   @PostMapping("/signup")
-  public ResponseEntity<UserResponse> signup(@RequestBody UserSignupRequest request) {
+  public ResponseEntity<UserResponse> signup(@Valid @RequestBody UserSignupRequest request) {
     UserResponse response = userService.signup(request);
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 
   // 로그인
   @PostMapping("/login")
-  public ResponseEntity<UserResponse> login(@RequestBody UserLoginRequest request) {
+  public ResponseEntity<UserResponse> login(@Valid @RequestBody UserLoginRequest request) {
     UserResponse response = userService.login(request);
     return ResponseEntity.ok(response);
   }

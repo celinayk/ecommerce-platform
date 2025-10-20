@@ -2,7 +2,10 @@ package com.ecommerce.platform.global.common.exception;
 
 import com.ecommerce.platform.global.common.response.ErrorCode;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -26,6 +29,29 @@ public class GlobalExceptionHandler {
 
     return ResponseEntity
         .status(e.getErrorCode().getHttpStatus())
+        .body(errorResponse);
+  }
+
+  @ExceptionHandler(MethodArgumentNotValidException.class)
+  public ResponseEntity<Map<String, Object>> handleValidationException(MethodArgumentNotValidException e) {
+    log.error("MethodArgumentNotValidException: ", e);
+
+    Map<String, Object> errors = new HashMap<>();
+    e.getBindingResult().getAllErrors().forEach(error -> {
+      String fieldName = ((FieldError) error).getField();
+      String errorMessage = error.getDefaultMessage();
+      errors.put(fieldName, errorMessage);
+    });
+
+    Map<String, Object> errorResponse = new HashMap<>();
+    errorResponse.put("timestamp", LocalDateTime.now());
+    errorResponse.put("httpStatus", HttpStatus.BAD_REQUEST);
+    errorResponse.put("code", "VALIDATION_ERROR");
+    errorResponse.put("message", "입력값 검증에 실패했습니다.");
+    errorResponse.put("errors", errors);
+
+    return ResponseEntity
+        .status(HttpStatus.BAD_REQUEST)
         .body(errorResponse);
   }
 
