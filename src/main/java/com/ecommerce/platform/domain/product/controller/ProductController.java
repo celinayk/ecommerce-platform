@@ -3,6 +3,7 @@ package com.ecommerce.platform.domain.product.controller;
 import com.ecommerce.platform.domain.product.dto.ProductRequest;
 import com.ecommerce.platform.domain.product.dto.ProductResponse;
 import com.ecommerce.platform.domain.product.service.ProductService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -21,7 +22,7 @@ public class ProductController {
 
   // 상품 등록
   @PostMapping
-  public ResponseEntity<ProductResponse> createProduct(@RequestBody ProductRequest request) {
+  public ResponseEntity<ProductResponse> createProduct(@Valid @RequestBody ProductRequest request) {
     ProductResponse response = productService.createProduct(request);
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
@@ -45,7 +46,7 @@ public class ProductController {
   @PutMapping("/{id}")
   public ResponseEntity<ProductResponse> updateProduct(
       @PathVariable Long id,
-      @RequestBody ProductRequest request) {
+      @Valid @RequestBody ProductRequest request) {
     ProductResponse response = productService.updateProduct(id, request);
     return ResponseEntity.ok(response);
   }
