@@ -3,6 +3,7 @@ package com.ecommerce.platform.domain.order.controller;
 import com.ecommerce.platform.domain.order.dto.OrderRequest;
 import com.ecommerce.platform.domain.order.dto.OrderResponse;
 import com.ecommerce.platform.domain.order.service.OrderService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -21,7 +22,7 @@ public class OrderController {
 
   // 주문 생성
   @PostMapping
-  public ResponseEntity<OrderResponse> createOrder(@RequestBody OrderRequest request) {
+  public ResponseEntity<OrderResponse> createOrder(@Valid @RequestBody OrderRequest request) {
     OrderResponse response = orderService.createOrder(request);
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
