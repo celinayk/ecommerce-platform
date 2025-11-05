@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ecommerce.platform.domain.category.mapper.CategoryMapper">
+
+    <!-- Result Map -->
+    <resultMap id="CategoryResultMap" type="com.ecommerce.platform.domain.category.entity.Category">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="description" column="description"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+        <association property="parent" javaType="com.ecommerce.platform.domain.category.entity.Category">
+            <id property="id" column="parent_id"/>
+        </association>
+    </resultMap>
+
+    <!-- 카테고리 저장 -->
+    <insert id="insert" parameterType="com.ecommerce.platform.domain.category.entity.Category"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO categories (name, description, parent_id, created_at, updated_at)
+        VALUES (#{name}, #{description}, #{parent.id}, NOW(), NOW())
+    </insert>
+
+    <!-- ID로 카테고리 조회 -->
+    <select id="findById" resultMap="CategoryResultMap">
+        SELECT c.id, c.name, c.description, c.parent_id, c.created_at, c.updated_at
+        FROM categories c
+        WHERE c.id = #{id}
+    </select>
+
+    <!-- 이름으로 카테고리 조회 -->
+    <select id="findByName" resultMap="CategoryResultMap">
+        SELECT c.id, c.name, c.description, c.parent_id, c.created_at, c.updated_at
+        FROM categories c
+        WHERE c.name = #{name}
+    </select>
+
+    <!-- 전체 카테고리 조회 -->
+    <select id="findAll" resultMap="CategoryResultMap">
+        SELECT c.id, c.name, c.description, c.parent_id, c.created_at, c.updated_at
+        FROM categories c
+        ORDER BY c.id ASC
+    </select>
+
+    <!-- 부모 카테고리로 자식 카테고리 조회 -->
+    <select id="findByParentId" resultMap="CategoryResultMap">
+        SELECT c.id, c.name, c.description, c.parent_id, c.created_at, c.updated_at
+        FROM categories c
+        WHERE c.parent_id = #{parentId}
+        ORDER BY c.id ASC
+    </select>
+
+    <!-- 최상위 카테고리 조회 (parent_id가 NULL) -->
+    <select id="findRootCategories" resultMap="CategoryResultMap">
+        SELECT c.id, c.name, c.description, c.parent_id, c.created_at, c.updated_at
+        FROM categories c
+        WHERE c.parent_id IS NULL
+        ORDER BY c.id ASC
+    </select>
+
+    <!-- 카테고리 수정 -->
+    <update id="update" parameterType="com.ecommerce.platform.domain.category.entity.Category">
+        UPDATE categories
+        SET name = #{name},
+            description = #{description},
+            parent_id = #{parent.id},
+            updated_at = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <!-- 카테고리 삭제 -->
+    <delete id="deleteById">
+        DELETE FROM categories
+        WHERE id = #{id}
+    </delete>
+
+</mapper>

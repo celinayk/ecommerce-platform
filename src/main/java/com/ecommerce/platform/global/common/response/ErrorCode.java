@@ -17,7 +17,12 @@ public enum ErrorCode {
 
   // 주문 (3xxx)
   ORDER_NOT_FOUND(404, 3001, "존재하지 않는 주문입니다."),
-  ORDER_ALREADY_CANCELLED(400, 3002, "이미 취소된 주문입니다.");
+  ORDER_ALREADY_CANCELLED(400, 3002, "이미 취소된 주문입니다."),
+
+  // 카테고리 (4xxx)
+  CATEGORY_NOT_FOUND(404, 4001, "존재하지 않는 카테고리입니다."),
+  HAS_CHILD_CATEGORIES(400, 4002, "하위 카테고리가 있어 삭제할 수 없습니다."),
+  DUPLICATE_RESOURCE(400, 4003, "이미 존재하는 리소스입니다.");
 
   private final int httpStatus;
   private final int code;
