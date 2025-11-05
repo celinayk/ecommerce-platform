@@ -1,38 +1,20 @@
 package com.ecommerce.platform.domain.product.entity;
 
 import com.ecommerce.platform.domain.common.BaseEntity;
-import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.math.BigDecimal;
-
-@Entity
-@Table(name = "products")
 @Getter
 @Setter
 @NoArgsConstructor
 public class Product extends BaseEntity {
 
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
-
-  @Column(nullable = false, length = 255)
   private String name;
-
-  @Column(columnDefinition = "TEXT")
   private String description;
-
-  @Column(nullable = false)
   private Integer price;
-
-  @Column(nullable = false)
   private Integer stockQuantity = 0;
-
-  @Enumerated(EnumType.STRING)
-  @Column(nullable = false, length = 20)
   private ProductStatus status = ProductStatus.AVAILABLE;
 
 

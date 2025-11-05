@@ -2,38 +2,22 @@ package com.ecommerce.platform.domain.order.entity;
 
 import com.ecommerce.platform.domain.common.BaseEntity;
 import com.ecommerce.platform.domain.user.entity.User;
-import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-@Entity
-@Table(name = "orders")
 @Getter
 @Setter
 @NoArgsConstructor
 public class Order extends BaseEntity {
 
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
-
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "user_id", nullable = false)
   private User user;
-
-  @Column(nullable = false)
   private Integer totalAmount;
-
-  @Enumerated(EnumType.STRING)
-  @Column(nullable = false, length = 20)
-  private OrderStatus status = OrderStatus.ORDER;  // 기본값 ORDER
-
-  @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
+  private OrderStatus status = OrderStatus.ORDER;
   private List<OrderItem> orderItems = new ArrayList<>();
 
   // 연관관계 편의 메서드
