@@ -4,7 +4,7 @@ import com.ecommerce.platform.domain.user.dto.UserLoginRequest;
 import com.ecommerce.platform.domain.user.dto.UserResponse;
 import com.ecommerce.platform.domain.user.dto.UserSignupRequest;
 import com.ecommerce.platform.domain.user.entity.User;
-import com.ecommerce.platform.domain.user.repository.UserRepository;
+import com.ecommerce.platform.domain.user.mapper.UserMapper;
 import com.ecommerce.platform.global.common.exception.CustomException;
 import com.ecommerce.platform.global.common.response.ErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -14,21 +14,17 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/*
- * @Transactional(readOnly = true): 데이터의 변경이 없는 읽기 전용 메서드에 사용
- */
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class UserService {
 
-  private final UserRepository userRepository;
+  private final UserMapper userMapper;
 
   // 회원가입
   @Transactional
   public UserResponse signup(UserSignupRequest request) {
     // 이메일 중복 체크
-    if (userRepository.findByEmail(request.getEmail()) != null) {
+    if (userMapper.findByEmail(request.getEmail()) != null) {
       throw new CustomException(ErrorCode.EMAIL_ALREADY_EXISTS);
     }
 
@@ -38,20 +34,22 @@ public class UserService {
     user.setPassword(request.getPassword());
     user.setName(request.getName());
 
-    User savedUser = userRepository.save(user);
-    return UserResponse.from(savedUser);
+    userMapper.insert(user);
+    return UserResponse.from(user);
   }
 
   // ID로 회원 조회
   public UserResponse findById(Long id) {
-    User user = userRepository.findById(id)
-        .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+    User user = userMapper.findById(id);
+    if (user == null) {
+      throw new CustomException(ErrorCode.USER_NOT_FOUND);
+    }
     return UserResponse.from(user);
   }
 
   // 이메일로 회원 조회
   public UserResponse findByEmail(String email) {
-    User user = userRepository.findByEmail(email);
+    User user = userMapper.findByEmail(email);
     if (user == null) {
       throw new CustomException(ErrorCode.USER_NOT_FOUND);
     }
@@ -60,7 +58,7 @@ public class UserService {
 
   // 전체 회원 조회
   public List<UserResponse> findAllUser() {
-    return userRepository.findAll().stream()
+    return userMapper.findAll().stream()
         .map(UserResponse::from)
         .collect(Collectors.toList());
   }
@@ -68,7 +66,7 @@ public class UserService {
   // 로그인
   public UserResponse login(UserLoginRequest request) {
     // 이메일로 사용자 조회
-    User user = userRepository.findByEmail(request.getEmail());
+    User user = userMapper.findByEmail(request.getEmail());
     if (user == null) {
       throw new CustomException(ErrorCode.PASSWORD_UNMATCHED);
     }
