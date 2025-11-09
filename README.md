@@ -204,6 +204,111 @@
   </details>
 
 ---
+ ### 📂 Category API
+
+  | Method | Endpoint | Description | Request Body | Response | Error |
+  |--------|----------|-------------|--------------|----------|-------|
+  | POST | `/api/categories` | 카테고리 생성 | `name`(필수), `description`, `parentId`(optional) | 201
+   Created | 400 (중복 이름) |
+  | GET | `/api/categories/{id}` | 카테고리 상세 조회 | - | 200 OK | 404 (카테고리 없음) |
+  | GET | `/api/categories` | 전체 카테고리 조회 | - | 200 OK | - |
+  | GET | `/api/categories/root` | 최상위 카테고리 조회 | - | 200 OK | - |
+  | GET | `/api/categories/parent/{parentId}` | 부모별 자식 카테고리 조회 | - | 200 OK | - |
+  | PUT | `/api/categories/{id}` | 카테고리 수정 | `name`, `description`, `parentId` | 200 OK | 404
+  | DELETE | `/api/categories/{id}` | 카테고리 삭제 | - | 204 No Content | 400 (자식 있음), 404
+
+  <details>
+  <summary><b>Request/Response 예시</b></summary>
+
+  **카테고리 생성 (POST /api/categories)**
+  ```json
+  // Request - 최상위 카테고리
+  {
+    "name": "전자제품",
+    "description": "전자제품 카테고리"
+  }
+
+  // Request - 하위 카테고리
+  {
+    "name": "노트북",
+    "description": "노트북 카테고리",
+    "parentId": 1
+  }
+
+  // Response (201 Created)
+  {
+    "id": 2,
+    "name": "노트북",
+    "description": "노트북 카테고리",
+    "parentId": 1
+  }
+
+  전체 카테고리 조회 (GET /api/categories)
+  // Response (200 OK)
+  [
+    {
+      "id": 1,
+      "name": "전자제품",
+      "description": "전자제품 카테고리",
+      "parentId": null
+    },
+    {
+      "id": 2,
+      "name": "노트북",
+      "description": "노트북 카테고리",
+      "parentId": 1
+    }
+  ]
+
+  최상위 카테고리 조회 (GET /api/categories/root)
+  // Response (200 OK)
+  [
+    {
+      "id": 1,
+      "name": "전자제품",
+      "description": "전자제품 카테고리",
+      "parentId": null
+    },
+    {
+      "id": 3,
+      "name": "의류",
+      "description": "의류 카테고리",
+      "parentId": null
+    }
+  ]
+
+  부모별 자식 카테고리 조회 (GET /api/categories/parent/1)
+  // Response (200 OK)
+  [
+    {
+      "id": 2,
+      "name": "노트북",
+      "description": "노트북 카테고리",
+      "parentId": 1
+    },
+    {
+      "id": 4,
+      "name": "스마트폰",
+      "description": "스마트폰 카테고리",
+      "parentId": 1
+    }
+  ]
+
+  카테고리 수정 (PUT /api/categories/2)
+  // Request
+  {
+    "name": "노트북(수정)",
+    "description": "수정된 설명",
+    "parentId": 1
+  }
+
+  // Response (200 OK)
+  {
+    "id": 2,
+    "name": "노트북(수정)",
+    "description": "수정된 설명",
+    "parentId": 1
+  }
 
   ### 📦 Order API
 
