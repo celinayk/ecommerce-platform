@@ -5,12 +5,12 @@ import com.ecommerce.platform.domain.order.dto.OrderResponse;
 import com.ecommerce.platform.domain.order.entity.Order;
 import com.ecommerce.platform.domain.order.entity.OrderItem;
 import com.ecommerce.platform.domain.order.entity.OrderStatus;
-import com.ecommerce.platform.domain.order.mapper.OrderItemMapper;
-import com.ecommerce.platform.domain.order.mapper.OrderMapper;
+import com.ecommerce.platform.domain.order.repository.OrderItemRepository;
+import com.ecommerce.platform.domain.order.repository.OrderRepository;
 import com.ecommerce.platform.domain.product.entity.Product;
-import com.ecommerce.platform.domain.product.mapper.ProductMapper;
+import com.ecommerce.platform.domain.product.repository.ProductRepository;
 import com.ecommerce.platform.domain.user.entity.User;
-import com.ecommerce.platform.domain.user.mapper.UserMapper;
+import com.ecommerce.platform.domain.user.repository.UserRepository;
 import com.ecommerce.platform.global.common.exception.CustomException;
 import com.ecommerce.platform.global.common.response.ErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -27,57 +27,53 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class OrderService {
 
-  private final OrderMapper orderMapper;
-  private final OrderItemMapper orderItemMapper;
-  private final ProductMapper productMapper;
-  private final UserMapper userMapper;
+  private final OrderRepository orderRepository;
+  private final OrderItemRepository orderItemRepository;
+  private final ProductRepository productRepository;
+  private final UserRepository userRepository;
 
   // 주문 생성
   @Transactional
   public OrderResponse createOrder(OrderRequest request) {
     // 엔티티 조회
-    User user = userMapper.findById(request.getUserId());
-    if (user == null) {
-      throw new CustomException(ErrorCode.USER_NOT_FOUND);
-    }
+    User user = userRepository.findById(request.getUserId())
+        .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
-    Product product = productMapper.findById(request.getProductId());
-    if (product == null) {
-      throw new CustomException(ErrorCode.PRODUCT_NOT_FOUND);
-    }
+    Product product = productRepository.findById(request.getProductId())
+        .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
 
     // 재고 확인
-    if (product.getStockQuantity() < request.getCount()) {
+    if (product.getStock() < request.getCount()) {
       throw new CustomException(ErrorCode.OUT_OF_STOCK);
     }
 
     // 재고 감소
-    productMapper.decreaseStock(product.getId(), request.getCount());
-
-    // 주문 생성
-    Order order = new Order();
-    order.setUser(user);
-    order.setStatus(OrderStatus.ORDER);
+    productRepository.decreaseStock(product.getId(), request.getCount());
 
     // OrderItem 생성
-    OrderItem orderItem = new OrderItem();
-    orderItem.setProduct(product);
-    orderItem.setPrice(product.getPrice());
-    orderItem.setQuantity(request.getCount());
-    orderItem.setSubtotal(product.getPrice() * request.getCount());
+    OrderItem orderItem = OrderItem.builder()
+        .product(product)
+        .price(product.getPrice())
+        .quantity(request.getCount())
+        .build();
 
-    // 총액 계산
-    order.setTotalAmount(orderItem.getSubtotal());
+    // 주문 생성
+    Order order = Order.builder()
+        .user(user)
+        .status(OrderStatus.PENDING)
+        .totalAmount(orderItem.getSubtotal())
+        .build();
 
     // 주문 저장
-    orderMapper.insert(order);
+    orderRepository.save(order);
 
     // OrderItem에 orderId 설정 후 저장
     orderItem.setOrder(order);
-    orderItemMapper.insert(orderItem);
+    orderItemRepository.save(orderItem);
 
     // 저장된 주문 조회 (orderItems 포함)
-    Order savedOrder = orderMapper.findById(order.getId());
+    Order savedOrder = orderRepository.findById(order.getId())
+        .orElseThrow(() -> new CustomException(ErrorCode.ORDER_NOT_FOUND));
     return OrderResponse.from(savedOrder);
   }
 
@@ -86,8 +82,8 @@ public class OrderService {
     int offset = (int) pageable.getOffset();
     int limit = pageable.getPageSize();
 
-    List<Order> orders = orderMapper.findAll(offset, limit);
-    int total = orderMapper.count();
+    List<Order> orders = orderRepository.findAll(offset, limit);
+    int total = orderRepository.count();
 
     List<OrderResponse> content = orders.stream()
         .map(OrderResponse::from)
@@ -98,32 +94,28 @@ public class OrderService {
 
   // 주문 상세 조회
   public OrderResponse getOrderById(Long orderId) {
-    Order order = orderMapper.findById(orderId);
-    if (order == null) {
-      throw new CustomException(ErrorCode.ORDER_NOT_FOUND);
-    }
+    Order order = orderRepository.findById(orderId)
+        .orElseThrow(() -> new CustomException(ErrorCode.ORDER_NOT_FOUND));
     return OrderResponse.from(order);
   }
 
   // 주문 취소
   @Transactional
   public void cancelOrder(Long orderId) {
-    Order order = orderMapper.findById(orderId);
-    if (order == null) {
-      throw new CustomException(ErrorCode.ORDER_NOT_FOUND);
-    }
+    Order order = orderRepository.findById(orderId)
+        .orElseThrow(() -> new CustomException(ErrorCode.ORDER_NOT_FOUND));
 
-    if (order.getStatus() == OrderStatus.CANCEL) {
+    if (order.getStatus() == OrderStatus.CANCELED) {
       throw new IllegalStateException("이미 취소된 주문입니다.");
     }
 
     // 주문 상태 변경
-    orderMapper.updateStatus(orderId, OrderStatus.CANCEL.name());
+    orderRepository.updateStatus(orderId, OrderStatus.CANCELED);
 
     // 재고 복구
-    List<OrderItem> orderItems = orderItemMapper.findByOrderId(orderId);
+    List<OrderItem> orderItems = orderItemRepository.findByOrderId(orderId);
     for (OrderItem orderItem : orderItems) {
-      productMapper.increaseStock(orderItem.getProduct().getId(), orderItem.getQuantity());
+      productRepository.increaseStock(orderItem.getProduct().getId(), orderItem.getQuantity());
     }
   }
 }

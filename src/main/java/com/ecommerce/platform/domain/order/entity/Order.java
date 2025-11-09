@@ -2,23 +2,29 @@ package com.ecommerce.platform.domain.order.entity;
 
 import com.ecommerce.platform.domain.common.BaseEntity;
 import com.ecommerce.platform.domain.user.entity.User;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Getter
-@Setter
 @NoArgsConstructor
 public class Order extends BaseEntity {
 
   private Long id;
   private User user;
-  private Integer totalAmount;
-  private OrderStatus status = OrderStatus.ORDER;
+  private Long totalAmount;
+  private OrderStatus status;
   private List<OrderItem> orderItems = new ArrayList<>();
+
+  @Builder
+  public Order(User user, Long totalAmount, OrderStatus status) {
+    this.user = user;
+    this.totalAmount = totalAmount != null ? totalAmount : 0L;
+    this.status = status != null ? status : OrderStatus.PENDING;
+  }
 
   // 연관관계 편의 메서드
   public void addOrderItem(OrderItem orderItem) {
@@ -31,27 +37,29 @@ public class Order extends BaseEntity {
   private void calculateTotalAmount() {
     this.totalAmount = orderItems.stream()
         .map(OrderItem::getSubtotal)
-        .reduce(0, Integer::sum);
+        .reduce(0L, Long::sum);
   }
 
   // 생성 메서드
   public static Order createOrder(User user, List<OrderItem> orderItems) {
-    Order order = new Order();
-    order.setUser(user);
-    order.setTotalAmount(0);
+    Order order = Order.builder()
+        .user(user)
+        .totalAmount(0L)
+        .status(OrderStatus.PENDING)
+        .build();
+
     for (OrderItem orderItem : orderItems) {
       order.addOrderItem(orderItem);
     }
-    order.setStatus(OrderStatus.ORDER);
     return order;
   }
 
   // 주문 취소
   public void cancel() {
-    if(this.status == OrderStatus.CANCEL) {
+    if(this.status == OrderStatus.CANCELED) {
       throw new IllegalStateException("이미 취소된 주문입니다.");
     }
-    this.status = OrderStatus.CANCEL;
+    this.status = OrderStatus.CANCELED;
     // 재고 복구
     for (OrderItem orderItem : orderItems) {
       orderItem.cancel();

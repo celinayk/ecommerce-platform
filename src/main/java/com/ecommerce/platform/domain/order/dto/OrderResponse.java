@@ -17,7 +17,7 @@ public class OrderResponse {
   private Long id;
   private Long userId;
   private String userName;
-  private Integer totalAmount;
+  private Long totalAmount;
   private OrderStatus status;
   private List<OrderItemInfo> orderItems;
   private LocalDateTime createdAt;
@@ -27,9 +27,9 @@ public class OrderResponse {
   public static class OrderItemInfo {
     private Long productId;
     private String productName;
-    private Integer price;
+    private Long price;
     private Integer quantity;
-    private Integer subtotal;
+    private Long subtotal;
 
     public static OrderItemInfo from(OrderItem orderItem) {
       return new OrderItemInfo(

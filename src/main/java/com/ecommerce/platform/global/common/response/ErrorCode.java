@@ -22,7 +22,18 @@ public enum ErrorCode {
   // 카테고리 (4xxx)
   CATEGORY_NOT_FOUND(404, 4001, "존재하지 않는 카테고리입니다."),
   HAS_CHILD_CATEGORIES(400, 4002, "하위 카테고리가 있어 삭제할 수 없습니다."),
-  DUPLICATE_RESOURCE(400, 4003, "이미 존재하는 리소스입니다.");
+  DUPLICATE_RESOURCE(400, 4003, "이미 존재하는 리소스입니다."),
+
+  // 환불 (5xxx)
+  REFUND_NOT_FOUND(404, 5001, "존재하지 않는 환불 내역입니다."),
+  REFUND_ALREADY_EXISTS(400, 5002, "이미 환불 요청된 주문입니다."),
+  CANNOT_REFUND_CANCELED_ORDER(400, 5003, "취소된 주문은 환불할 수 없습니다."),
+  UNAUTHORIZED_REFUND(403, 5004, "본인의 주문만 환불 요청할 수 있습니다."),
+  INVALID_REFUND_AMOUNT(400, 5005, "환불 금액이 유효하지 않습니다."),
+  REFUND_AMOUNT_EXCEEDED(400, 5006, "환불 금액이 주문 금액을 초과했습니다."),
+  REFUND_PERIOD_EXPIRED(400, 5007, "환불 가능 기간이 지났습니다."),
+  ORDER_NOT_COMPLETED(400, 5008, "완료된 주문만 환불 가능합니다."),
+  REFUND_ALREADY_PROCESSED(400, 5009, "이미 처리된 환불 요청입니다.");
 
   private final int httpStatus;
   private final int code;
