@@ -52,10 +52,13 @@ class OrderServiceTest {
     OrderResponse response = orderService.createOrder(request);
 
     // then
-    assertThat(response.getStatus()).isEqualTo(OrderStatus.ORDER);
+    assertThat(response.getStatus()).isEqualTo(OrderStatus.PENDING);
     assertThat(response.getOrderItems()).hasSize(1);
-    assertThat(response.getTotalAmount()).isEqualTo(20000);
-    assertThat(product.getStockQuantity()).isEqualTo(8); // 재고 감소 확인
+    assertThat(response.getTotalAmount()).isEqualTo(20000L);
+
+    // 재고 감소 확인 - DB에서 다시 조회
+    Product updatedProduct = productRepository.findById(product.getId()).orElseThrow();
+    assertThat(updatedProduct.getStock()).isEqualTo(8L);
   }
 
   @Test
@@ -119,8 +122,11 @@ class OrderServiceTest {
 
     // then
     OrderResponse canceledOrder = orderService.getOrderById(createdOrder.getId());
-    assertThat(canceledOrder.getStatus()).isEqualTo(OrderStatus.CANCEL);
-    assertThat(product.getStockQuantity()).isEqualTo(10); // 재고 복구 확인
+    assertThat(canceledOrder.getStatus()).isEqualTo(OrderStatus.CANCELED);
+
+    // 재고 복구 확인 - DB에서 다시 조회
+    Product updatedProduct = productRepository.findById(product.getId()).orElseThrow();
+    assertThat(updatedProduct.getStock()).isEqualTo(10L);
   }
 
   @Test
@@ -167,20 +173,21 @@ class OrderServiceTest {
   }
 
   private User createUser() {
-    User user = new User();
-    user.setEmail("test@example.com");
-    user.setPassword("password123");
-    user.setName("테스트유저");
+    User user = User.builder()
+        .email("test@example.com")
+        .password("password123")
+        .name("테스트유저")
+        .build();
     userRepository.save(user);
     return user;
   }
 
   private Product createProduct(String name, Integer price, int stockQuantity) {
-    Product product = new Product();
-    product.setName(name);
-    product.setPrice(price);
-    product.setStockQuantity(stockQuantity);
-    product.setStatus(ProductStatus.AVAILABLE);
+    Product product = Product.builder()
+        .name(name)
+        .price(price.longValue())
+        .stock((long) stockQuantity)
+        .build();
     productRepository.save(product);
     return product;
   }

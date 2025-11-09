@@ -65,9 +65,8 @@ public class CategoryService {
     Category existingCategory = findById(id);
 
     // 카테고리 정보 업데이트
-    existingCategory.setName(updateCategory.getName());
-    existingCategory.setDescription(updateCategory.getDescription());
-    existingCategory.setParent(updateCategory.getParent());
+    existingCategory.updateCategoryInfo(updateCategory.getName(), updateCategory.getDescription());
+    existingCategory.updateParent(updateCategory.getParent());
 
     return categoryRepository.save(existingCategory);
   }

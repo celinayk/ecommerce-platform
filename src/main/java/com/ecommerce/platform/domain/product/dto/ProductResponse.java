@@ -12,8 +12,8 @@ public class ProductResponse {
   private Long id;
   private String name;
   private String description;
-  private Integer price;
-  private Integer stockQuantity;
+  private Long price;
+  private Long stock;
   private ProductStatus status;
 
   public static ProductResponse from(Product product) {
@@ -22,7 +22,7 @@ public class ProductResponse {
         product.getName(),
         product.getDescription(),
         product.getPrice(),
-        product.getStockQuantity(),
+        product.getStock(),
         product.getStatus()
     );
   }

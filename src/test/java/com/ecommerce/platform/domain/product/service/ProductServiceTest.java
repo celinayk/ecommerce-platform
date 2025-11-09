@@ -41,8 +41,8 @@ class ProductServiceTest {
 
     // then
     assertThat(response.getName()).isEqualTo("테스트 상품");
-    assertThat(response.getPrice()).isEqualTo(10000);
-    assertThat(response.getStockQuantity()).isEqualTo(100);
+    assertThat(response.getPrice()).isEqualTo(10000L);
+    assertThat(response.getStock()).isEqualTo(100L);
     assertThat(response.getStatus()).isEqualTo(ProductStatus.AVAILABLE);
   }
 
@@ -50,10 +50,11 @@ class ProductServiceTest {
   void 상품목록조회() {
     // given
     for (int i = 1; i <= 15; i++) {
-      Product product = new Product();
-      product.setName("상품" + i);
-      product.setPrice(1000 * i);
-      product.setStockQuantity(10);
+      Product product = Product.builder()
+          .name("상품" + i)
+          .price((long) (1000 * i))
+          .stock(10L)
+          .build();
       productRepository.save(product);
     }
 
@@ -70,10 +71,11 @@ class ProductServiceTest {
   @Test
   void id로상품조회() {
     // given
-    Product product = new Product();
-    product.setName("조회 테스트 상품");
-    product.setPrice(5000);
-    product.setStockQuantity(50);
+    Product product = Product.builder()
+        .name("조회 테스트 상품")
+        .price(5000L)
+        .stock(50L)
+        .build();
     Product savedProduct = productRepository.save(product);
 
     // when
@@ -94,10 +96,11 @@ class ProductServiceTest {
   @Test
   void 상품수정() {
     // given
-    Product product = new Product();
-    product.setName("수정 전 상품");
-    product.setPrice(5000);
-    product.setStockQuantity(50);
+    Product product = Product.builder()
+        .name("수정 전 상품")
+        .price(5000L)
+        .stock(50L)
+        .build();
     Product savedProduct = productRepository.save(product);
 
     ProductRequest request = new ProductRequest();
@@ -112,17 +115,18 @@ class ProductServiceTest {
     // then
     assertThat(response.getName()).isEqualTo("수정 후 상품");
     assertThat(response.getDescription()).isEqualTo("수정된 설명");
-    assertThat(response.getPrice()).isEqualTo(7000);
-    assertThat(response.getStockQuantity()).isEqualTo(70);
+    assertThat(response.getPrice()).isEqualTo(7000L);
+    assertThat(response.getStock()).isEqualTo(70L);
   }
 
   @Test
   void 상품삭제() {
     // given
-    Product product = new Product();
-    product.setName("삭제할 상품");
-    product.setPrice(3000);
-    product.setStockQuantity(30);
+    Product product = Product.builder()
+        .name("삭제할 상품")
+        .price(3000L)
+        .stock(30L)
+        .build();
     Product savedProduct = productRepository.save(product);
     Long productId = savedProduct.getId();
 

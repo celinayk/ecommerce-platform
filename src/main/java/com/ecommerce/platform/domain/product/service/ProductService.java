@@ -3,7 +3,7 @@ package com.ecommerce.platform.domain.product.service;
 import com.ecommerce.platform.domain.product.dto.ProductRequest;
 import com.ecommerce.platform.domain.product.dto.ProductResponse;
 import com.ecommerce.platform.domain.product.entity.Product;
-import com.ecommerce.platform.domain.product.mapper.ProductMapper;
+import com.ecommerce.platform.domain.product.repository.ProductRepository;
 import com.ecommerce.platform.global.common.exception.CustomException;
 import com.ecommerce.platform.global.common.response.ErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -20,18 +20,19 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ProductService {
 
-  private final ProductMapper productMapper;
+  private final ProductRepository productRepository;
 
   // 상품 등록
   @Transactional
   public ProductResponse createProduct(ProductRequest request) {
-    Product product = new Product();
-    product.setName(request.getName());
-    product.setDescription(request.getDescription());
-    product.setPrice(request.getPrice());
-    product.setStockQuantity(request.getStockQuantity());
+    Product product = Product.builder()
+        .name(request.getName())
+        .description(request.getDescription())
+        .price(request.getPrice().longValue())
+        .stock(request.getStockQuantity().longValue())
+        .build();
 
-    productMapper.insert(product);
+    productRepository.save(product);
     return ProductResponse.from(product);
   }
 
@@ -40,8 +41,8 @@ public class ProductService {
     int offset = (int) pageable.getOffset();
     int limit = pageable.getPageSize();
 
-    List<Product> products = productMapper.findAll(offset, limit);
-    int total = productMapper.count();
+    List<Product> products = productRepository.findAll(offset, limit);
+    int total = productRepository.count();
 
     List<ProductResponse> content = products.stream()
         .map(ProductResponse::from)
@@ -52,46 +53,40 @@ public class ProductService {
 
   // 상품 상세 조회
   public ProductResponse getProductById(Long id) {
-    Product product = productMapper.findById(id);
-    if (product == null) {
-      throw new CustomException(ErrorCode.PRODUCT_NOT_FOUND);
-    }
+    Product product = productRepository.findById(id)
+        .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
     return ProductResponse.from(product);
   }
 
   // 상품 수정
   @Transactional
   public ProductResponse updateProduct(Long id, ProductRequest request) {
-    Product product = productMapper.findById(id);
-    if (product == null) {
-      throw new CustomException(ErrorCode.PRODUCT_NOT_FOUND);
-    }
+    Product product = productRepository.findById(id)
+        .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
 
-    product.setName(request.getName());
-    product.setDescription(request.getDescription());
-    product.setPrice(request.getPrice());
-    product.setStockQuantity(request.getStockQuantity());
+    product.updateProductInfo(
+        request.getName(),
+        request.getDescription(),
+        request.getPrice().longValue(),
+        request.getStockQuantity().longValue()
+    );
 
-    productMapper.update(product);
+    productRepository.save(product);
     return ProductResponse.from(product);
   }
 
   // 상품 삭제
   @Transactional
   public void deleteProduct(Long id) {
-    Product product = productMapper.findById(id);
-    if (product == null) {
+    if (!productRepository.existsById(id)) {
       throw new CustomException(ErrorCode.PRODUCT_NOT_FOUND);
     }
-    productMapper.deleteById(id);
+    productRepository.deleteById(id);
   }
 
   // OrderService에서 사용하는 메서드 (호환성 유지)
   public Product findOne(Long itemId) {
-    Product product = productMapper.findById(itemId);
-    if (product == null) {
-      throw new CustomException(ErrorCode.PRODUCT_NOT_FOUND);
-    }
-    return product;
+    return productRepository.findById(itemId)
+        .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
   }
 }

@@ -4,6 +4,7 @@ import com.ecommerce.platform.domain.user.dto.UserResponse;
 import com.ecommerce.platform.domain.user.dto.UserSignupRequest;
 import com.ecommerce.platform.domain.user.entity.User;
 import com.ecommerce.platform.domain.user.repository.UserRepository;
+import com.ecommerce.platform.global.common.exception.CustomException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,7 +58,7 @@ class UserServiceTest {
 
     // when & then
     assertThatThrownBy(() -> userService.signup(request2))
-        .isInstanceOf(IllegalArgumentException.class)
+        .isInstanceOf(CustomException.class)
         .hasMessage("이미 존재하는 이메일입니다.");
   }
 
@@ -65,15 +66,17 @@ class UserServiceTest {
   @DisplayName("전체 회원을 조회할 수 있다")
   void findAllUser() {
     // given
-    User user1 = new User();
-    user1.setEmail("user1@example.com");
-    user1.setPassword("password1");
-    user1.setName("유저1");
+    User user1 = User.builder()
+        .email("user1@example.com")
+        .password("password1")
+        .name("유저1")
+        .build();
 
-    User user2 = new User();
-    user2.setEmail("user2@example.com");
-    user2.setPassword("password2");
-    user2.setName("유저2");
+    User user2 = User.builder()
+        .email("user2@example.com")
+        .password("password2")
+        .name("유저2")
+        .build();
 
     userRepository.save(user1);
     userRepository.save(user2);

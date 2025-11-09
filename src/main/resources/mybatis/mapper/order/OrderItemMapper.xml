@@ -14,6 +14,7 @@
             <id property="id" column="product_id"/>
             <result property="name" column="product_name"/>
             <result property="price" column="product_price"/>
+            <result property="stock" column="product_stock"/>
         </association>
     </resultMap>
 
@@ -27,7 +28,7 @@
     <!-- 주문 ID로 주문 항목 조회 -->
     <select id="findByOrderId" resultMap="OrderItemResultMap">
         SELECT oi.id, oi.price, oi.quantity, oi.subtotal,
-               oi.product_id, p.name as product_name, p.price as product_price
+               oi.product_id, p.name as product_name, p.price as product_price, p.stock_quantity as product_stock
         FROM order_items oi
         INNER JOIN products p ON oi.product_id = p.id
         WHERE oi.order_id = #{orderId}
@@ -36,7 +37,7 @@
     <!-- ID로 주문 항목 조회 -->
     <select id="findById" resultMap="OrderItemResultMap">
         SELECT oi.id, oi.price, oi.quantity, oi.subtotal,
-               oi.product_id, p.name as product_name, p.price as product_price
+               oi.product_id, p.name as product_name, p.price as product_price, p.stock_quantity as product_stock
         FROM order_items oi
         INNER JOIN products p ON oi.product_id = p.id
         WHERE oi.id = #{id}

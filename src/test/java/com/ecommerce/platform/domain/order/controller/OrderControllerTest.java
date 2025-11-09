@@ -43,19 +43,20 @@ class OrderControllerTest {
   @BeforeEach
   void setUp() {
     // 테스트용 사용자 생성
-    testUser = new User();
-    testUser.setEmail("test@example.com");
-    testUser.setPassword("password123");
-    testUser.setName("테스트유저");
+    testUser = User.builder()
+        .email("test@example.com")
+        .password("password123")
+        .name("테스트유저")
+        .build();
     userRepository.save(testUser);
 
     // 테스트용 상품 생성
-    testProduct = new Product();
-    testProduct.setName("테스트상품");
-    testProduct.setDescription("상품 설명");
-    testProduct.setPrice(10000);
-    testProduct.setStockQuantity(100);
-    testProduct.setStatus(ProductStatus.AVAILABLE);
+    testProduct = Product.builder()
+        .name("테스트상품")
+        .description("상품 설명")
+        .price(10000L)
+        .stock(100L)
+        .build();
     productRepository.save(testProduct);
   }
 
