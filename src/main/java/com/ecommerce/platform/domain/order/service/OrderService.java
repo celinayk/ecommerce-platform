@@ -42,13 +42,9 @@ public class OrderService {
     Product product = productRepository.findById(request.getProductId())
         .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
 
-    // 재고 확인
-    if (product.getStock() < request.getCount()) {
-      throw new CustomException(ErrorCode.OUT_OF_STOCK);
-    }
-
-    // 재고 감소
-    productRepository.decreaseStock(product.getId(), request.getCount());
+    // 재고 감소 (도메인 로직)
+    product.decreaseStock(request.getCount());
+    productRepository.save(product);
 
     // OrderItem 생성
     OrderItem orderItem = OrderItem.builder()
@@ -112,10 +108,13 @@ public class OrderService {
     // 주문 상태 변경
     orderRepository.updateStatus(orderId, OrderStatus.CANCELED);
 
-    // 재고 복구
+    // 재고 복구 (도메인 로직)
     List<OrderItem> orderItems = orderItemRepository.findByOrderId(orderId);
     for (OrderItem orderItem : orderItems) {
-      productRepository.increaseStock(orderItem.getProduct().getId(), orderItem.getQuantity());
+      Product product = productRepository.findById(orderItem.getProduct().getId())
+          .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
+      product.increaseStock(orderItem.getQuantity());
+      productRepository.save(product);
     }
   }
 }

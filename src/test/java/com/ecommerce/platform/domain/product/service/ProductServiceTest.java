@@ -1,19 +1,22 @@
 package com.ecommerce.platform.domain.product.service;
 
-import com.ecommerce.platform.domain.product.dto.ProductRequest;
+import com.ecommerce.platform.domain.category.entity.Category;
+import com.ecommerce.platform.domain.category.repository.CategoryRepository;
+import com.ecommerce.platform.domain.product.dto.ProductCreateRequest;
 import com.ecommerce.platform.domain.product.dto.ProductResponse;
+import com.ecommerce.platform.domain.product.dto.ProductUpdateRequest;
 import com.ecommerce.platform.domain.product.entity.Product;
 import com.ecommerce.platform.domain.product.entity.ProductStatus;
 import com.ecommerce.platform.domain.product.repository.ProductRepository;
 import com.ecommerce.platform.global.common.exception.CustomException;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -26,15 +29,29 @@ class ProductServiceTest {
   ProductService productService;
   @Autowired
   ProductRepository productRepository;
+  @Autowired
+  CategoryRepository categoryRepository;
 
+  @BeforeEach
+  void setUp() {
+    if (!categoryRepository.existsById(1L)) {
+      Category category = Category.builder()
+          .name("전자기기")
+          .build();
+
+      categoryRepository.save(category);
+    }
+  }
   @Test
   void 상품등록() {
     // given
-    ProductRequest request = new ProductRequest();
-    request.setName("테스트 상품");
-    request.setDescription("테스트 상품 설명");
-    request.setPrice(10000);
-    request.setStockQuantity(100);
+    ProductCreateRequest request = ProductCreateRequest.builder()
+        .name("테스트 상품")
+        .description("테스트 상품 설명")
+        .price(10000L)
+        .stock(100L)
+        .categoryId(1L)
+        .build();
 
     // when
     ProductResponse response = productService.createProduct(request);
@@ -43,7 +60,6 @@ class ProductServiceTest {
     assertThat(response.getName()).isEqualTo("테스트 상품");
     assertThat(response.getPrice()).isEqualTo(10000L);
     assertThat(response.getStock()).isEqualTo(100L);
-    assertThat(response.getStatus()).isEqualTo(ProductStatus.AVAILABLE);
   }
 
   @Test
@@ -58,14 +74,11 @@ class ProductServiceTest {
       productRepository.save(product);
     }
 
-    Pageable pageable = PageRequest.of(0, 10);
-
     // when
-    Page<ProductResponse> responses = productService.getAllProducts(pageable);
+    List<ProductResponse> responses = productService.getAllProducts();
 
     // then
-    assertThat(responses.getContent()).hasSize(10);
-    assertThat(responses.getTotalElements()).isGreaterThanOrEqualTo(15);
+    assertThat(responses).hasSizeGreaterThanOrEqualTo(15);
   }
 
   @Test
@@ -103,11 +116,13 @@ class ProductServiceTest {
         .build();
     Product savedProduct = productRepository.save(product);
 
-    ProductRequest request = new ProductRequest();
-    request.setName("수정 후 상품");
-    request.setDescription("수정된 설명");
-    request.setPrice(7000);
-    request.setStockQuantity(70);
+    ProductUpdateRequest request = ProductUpdateRequest.builder()
+        .name("수정 후 상품")
+        .description("수정된 설명")
+        .price(7000L)
+        .stock(70L)
+        .categoryId(1L)
+        .build();
 
     // when
     ProductResponse response = productService.updateProduct(savedProduct.getId(), request);

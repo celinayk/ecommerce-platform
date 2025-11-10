@@ -1,5 +1,6 @@
 package com.ecommerce.platform.domain.product.repository;
 
+import com.ecommerce.platform.domain.category.entity.Category;
 import com.ecommerce.platform.domain.product.entity.Product;
 
 import java.util.List;
@@ -11,43 +12,41 @@ import java.util.Optional;
  */
 public interface ProductRepository {
 
-  /**
-   * 상품 저장
-   */
+
   Product save(Product product);
 
-  /**
-   * ID로 상품 조회
-   */
   Optional<Product> findById(Long id);
 
-  /**
-   * 전체 상품 조회 (페이징)
-   */
-  List<Product> findAll(int offset, int limit);
+  List<Product> findAll();
 
-  /**
-   * 전체 상품 개수
-   */
+  // 카테고리 + 상품명 키워드 + 가격 범위 (전체 조건)
+  List<Product> findByCategoryAndNameContainingAndPriceBetween(
+      Category category, String keyword, Long minPrice, Long maxPrice);
+
+  // 카테고리별 조회
+  List<Product> findByCategory(Category category);
+
+  // 상품명 키워드 검색 (LIKE 검색)
+  List<Product> findByNameContaining(String keyword);
+
+  // 가격 범위 조회
+  List<Product> findByPriceBetween(Long minPrice, Long maxPrice);
+
+  // 카테고리 + 가격 범위
+  List<Product> findByCategoryAndPriceBetween(Category category, Long minPrice, Long maxPrice);
+
+  // 상품명 키워드 + 가격 범위
+  List<Product> findByNameContainingAndPriceBetween(String keyword, Long minPrice, Long maxPrice);
+
+  // 카테고리 + 상품명 키워드
+  List<Product> findByCategoryAndNameContaining(Category category, String keyword);
+
+
   int count();
 
-  /**
-   * 상품 존재 여부 확인
-   */
   boolean existsById(Long id);
 
-  /**
-   * 상품 삭제
-   */
+
   void deleteById(Long id);
 
-  /**
-   * 재고 감소
-   */
-  void decreaseStock(Long id, int quantity);
-
-  /**
-   * 재고 증가
-   */
-  void increaseStock(Long id, int quantity);
 }

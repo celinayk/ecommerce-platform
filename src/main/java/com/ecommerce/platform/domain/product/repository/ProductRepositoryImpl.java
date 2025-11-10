@@ -1,5 +1,6 @@
 package com.ecommerce.platform.domain.product.repository;
 
+import com.ecommerce.platform.domain.category.entity.Category;
 import com.ecommerce.platform.domain.product.entity.Product;
 import com.ecommerce.platform.domain.product.mapper.ProductMapper;
 import lombok.RequiredArgsConstructor;
@@ -36,8 +37,45 @@ public class ProductRepositoryImpl implements ProductRepository {
   }
 
   @Override
-  public List<Product> findAll(int offset, int limit) {
-    return productMapper.findAll(offset, limit);
+  public List<Product> findAll() {
+    return productMapper.findAll();
+  }
+
+  @Override
+  public List<Product> findByCategoryAndNameContainingAndPriceBetween(Category category, String keyword, Long minPrice, Long maxPrice) {
+    return productMapper.findByCategoryIdAndNameContainingAndPriceBetween(
+        category.getId(), keyword, minPrice, maxPrice
+    );
+  }
+
+  @Override
+  public List<Product> findByCategory(Category category) {
+    return productMapper.findByCategoryId(category.getId());
+  }
+
+  @Override
+  public List<Product> findByNameContaining(String keyword) {
+    return productMapper.findByNameContaining(keyword);
+  }
+
+  @Override
+  public List<Product> findByPriceBetween(Long minPrice, Long maxPrice) {
+    return productMapper.findByPriceBetween(minPrice, maxPrice);
+  }
+
+  @Override
+  public List<Product> findByCategoryAndPriceBetween(Category category, Long minPrice, Long maxPrice) {
+    return productMapper.findByCategoryIdAndPriceBetween(category.getId(), minPrice, maxPrice);
+  }
+
+  @Override
+  public List<Product> findByNameContainingAndPriceBetween(String keyword, Long minPrice, Long maxPrice) {
+    return productMapper.findByNameContainingAndPriceBetween(keyword, minPrice, maxPrice);
+  }
+
+  @Override
+  public List<Product> findByCategoryAndNameContaining(Category category, String keyword) {
+    return productMapper.findByCategoryIdAndNameContaining(category.getId(), keyword);
   }
 
   @Override
@@ -55,13 +93,4 @@ public class ProductRepositoryImpl implements ProductRepository {
     productMapper.deleteById(id);
   }
 
-  @Override
-  public void decreaseStock(Long id, int quantity) {
-    productMapper.decreaseStock(id, quantity);
-  }
-
-  @Override
-  public void increaseStock(Long id, int quantity) {
-    productMapper.increaseStock(id, quantity);
-  }
 }
