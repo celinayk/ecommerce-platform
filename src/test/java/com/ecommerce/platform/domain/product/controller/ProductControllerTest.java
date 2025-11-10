@@ -1,8 +1,11 @@
 package com.ecommerce.platform.domain.product.controller;
 
-import com.ecommerce.platform.domain.product.dto.ProductRequest;
+import com.ecommerce.platform.domain.category.entity.Category;
+import com.ecommerce.platform.domain.category.repository.CategoryRepository;
+import com.ecommerce.platform.domain.product.dto.ProductCreateRequest;
 import com.ecommerce.platform.domain.product.repository.ProductRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -27,15 +30,31 @@ class ProductControllerTest {
   ObjectMapper objectMapper;
   @Autowired
   ProductRepository productRepository;
+  @Autowired
+  CategoryRepository categoryRepository;
+
+  @BeforeEach
+  void setUp() {
+    if (!categoryRepository.existsById(1L)) {
+      Category category = Category.builder()
+          .name("전자기기")
+          .build();
+
+      categoryRepository.save(category);
+    }
+  }
+
 
   @Test
   void 상품등록_성공() throws Exception {
     // given
-    ProductRequest request = new ProductRequest();
-    request.setName("테스트상품");
-    request.setDescription("상품 설명입니다");
-    request.setPrice(10000);
-    request.setStockQuantity(100);
+    ProductCreateRequest request = ProductCreateRequest.builder()
+        .name("테스트상품")
+        .description("상품 설명입니다")
+        .price(10000L)
+        .stock(100L)
+        .categoryId(1L)
+        .build();
 
     // when & then
     mockMvc.perform(post("/api/products")
@@ -49,11 +68,13 @@ class ProductControllerTest {
   @Test
   void 상품등록_상품명필수검증() throws Exception {
     // given
-    ProductRequest request = new ProductRequest();
-    request.setName(""); // 빈 상품명
-    request.setDescription("상품 설명입니다");
-    request.setPrice(10000);
-    request.setStockQuantity(100);
+    ProductCreateRequest request = ProductCreateRequest.builder()
+        .name("") // 빈 상품명
+        .description("상품 설명입니다")
+        .price(10000L)
+        .stock(100L)
+        .categoryId(1L)
+        .build();
 
     // when & then
     mockMvc.perform(post("/api/products")
@@ -67,11 +88,13 @@ class ProductControllerTest {
   @Test
   void 상품등록_상품명길이검증() throws Exception {
     // given
-    ProductRequest request = new ProductRequest();
-    request.setName("a".repeat(101)); // 101자 (최대 100자)
-    request.setDescription("상품 설명입니다");
-    request.setPrice(10000);
-    request.setStockQuantity(100);
+    ProductCreateRequest request = ProductCreateRequest.builder()
+        .name("a".repeat(101)) // 101자 (최대 100자)
+        .description("상품 설명입니다")
+        .price(10000L)
+        .stock(100L)
+        .categoryId(1L)
+        .build();
 
     // when & then
     mockMvc.perform(post("/api/products")
@@ -85,11 +108,13 @@ class ProductControllerTest {
   @Test
   void 상품등록_설명필수검증() throws Exception {
     // given
-    ProductRequest request = new ProductRequest();
-    request.setName("테스트상품");
-    request.setDescription(""); // 빈 설명
-    request.setPrice(10000);
-    request.setStockQuantity(100);
+    ProductCreateRequest request = ProductCreateRequest.builder()
+        .name("테스트상품")
+        .description("") // 빈 설명
+        .price(10000L)
+        .stock(100L)
+        .categoryId(1L)
+        .build();
 
     // when & then
     mockMvc.perform(post("/api/products")
@@ -103,11 +128,13 @@ class ProductControllerTest {
   @Test
   void 상품등록_설명길이검증() throws Exception {
     // given
-    ProductRequest request = new ProductRequest();
-    request.setName("테스트상품");
-    request.setDescription("a".repeat(501)); // 501자 (최대 500자)
-    request.setPrice(10000);
-    request.setStockQuantity(100);
+    ProductCreateRequest request = ProductCreateRequest.builder()
+        .name("테스트상품")
+        .description("a".repeat(501)) // 501자 (최대 500자)
+        .price(10000L)
+        .stock(100L)
+        .categoryId(1L)
+        .build();
 
     // when & then
     mockMvc.perform(post("/api/products")
@@ -142,11 +169,13 @@ class ProductControllerTest {
   @Test
   void 상품등록_가격최소값검증() throws Exception {
     // given
-    ProductRequest request = new ProductRequest();
-    request.setName("테스트상품");
-    request.setDescription("상품 설명입니다");
-    request.setPrice(-1000); // 음수
-    request.setStockQuantity(100);
+    ProductCreateRequest request = ProductCreateRequest.builder()
+        .name("테스트상품")
+        .description("상품 설명입니다")
+        .price((long) -1000) // 음수
+        .stock(100L)
+        .categoryId(1L)
+        .build();
 
     // when & then
     mockMvc.perform(post("/api/products")
@@ -160,11 +189,13 @@ class ProductControllerTest {
   @Test
   void 상품등록_가격최대값검증() throws Exception {
     // given
-    ProductRequest request = new ProductRequest();
-    request.setName("테스트상품");
-    request.setDescription("상품 설명입니다");
-    request.setPrice(100000001); // 1억원 초과
-    request.setStockQuantity(100);
+    ProductCreateRequest request = ProductCreateRequest.builder()
+        .name("테스트상품")
+        .description("상품 설명입니다")
+        .price(100000001L) // 1억원 초과
+        .stock(100L)
+        .categoryId(1L)
+        .build();
 
     // when & then
     mockMvc.perform(post("/api/products")
@@ -183,7 +214,7 @@ class ProductControllerTest {
           "name": "테스트상품",
           "description": "상품 설명입니다",
           "price": 10000,
-          "stockQuantity": null
+          "stock": null
         }
         """;
 
@@ -193,17 +224,19 @@ class ProductControllerTest {
             .content(requestBody))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"))
-        .andExpect(jsonPath("$.errors.stockQuantity").exists());
+        .andExpect(jsonPath("$.errors.stock").exists());
   }
 
   @Test
   void 상품등록_재고최소값검증() throws Exception {
     // given
-    ProductRequest request = new ProductRequest();
-    request.setName("테스트상품");
-    request.setDescription("상품 설명입니다");
-    request.setPrice(10000);
-    request.setStockQuantity(-10); // 음수
+    ProductCreateRequest request = ProductCreateRequest.builder()
+        .name("테스트상품")
+        .description("상품 설명입니다")
+        .price(10000L)
+        .stock((long) -10) // 음수
+        .categoryId(1L)
+        .build();
 
     // when & then
     mockMvc.perform(post("/api/products")
@@ -211,17 +244,19 @@ class ProductControllerTest {
             .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"))
-        .andExpect(jsonPath("$.errors.stockQuantity").exists());
+        .andExpect(jsonPath("$.errors.stock").exists());
   }
 
   @Test
   void 상품수정_검증() throws Exception {
     // given
-    ProductRequest request = new ProductRequest();
-    request.setName(""); // 빈 상품명
-    request.setDescription("수정된 설명");
-    request.setPrice(-1000); // 음수 가격
-    request.setStockQuantity(50);
+    ProductCreateRequest request = ProductCreateRequest.builder()
+        .name("") // 빈 상품명
+        .description("수정된 설명")
+        .price((long) -1000) // 음수 가격
+        .stock(50L)
+        .categoryId(1L)
+        .build();
 
     // when & then
     mockMvc.perform(put("/api/products/1")

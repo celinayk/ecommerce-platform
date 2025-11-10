@@ -1,7 +1,8 @@
 package com.ecommerce.platform.domain.product.controller;
 
-import com.ecommerce.platform.domain.product.dto.ProductRequest;
+import com.ecommerce.platform.domain.product.dto.ProductCreateRequest;
 import com.ecommerce.platform.domain.product.dto.ProductResponse;
+import com.ecommerce.platform.domain.product.dto.ProductUpdateRequest;
 import com.ecommerce.platform.domain.product.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +14,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/products")
 @RequiredArgsConstructor
@@ -22,16 +25,15 @@ public class ProductController {
 
   // 상품 등록
   @PostMapping
-  public ResponseEntity<ProductResponse> createProduct(@Valid @RequestBody ProductRequest request) {
+  public ResponseEntity<ProductResponse> createProduct(@Valid @RequestBody ProductCreateRequest request) {
     ProductResponse response = productService.createProduct(request);
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 
-  // 상품 목록 조회 (페이징, 정렬)
+  // 상품 목록 조회
   @GetMapping
-  public ResponseEntity<Page<ProductResponse>> getAllProducts(
-      @PageableDefault(size = 10, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
-    Page<ProductResponse> responses = productService.getAllProducts(pageable);
+  public ResponseEntity<List<ProductResponse>> getAllProducts() {
+    List<ProductResponse> responses = productService.getAllProducts();
     return ResponseEntity.ok(responses);
   }
 
@@ -46,7 +48,7 @@ public class ProductController {
   @PutMapping("/{id}")
   public ResponseEntity<ProductResponse> updateProduct(
       @PathVariable Long id,
-      @Valid @RequestBody ProductRequest request) {
+      @Valid @RequestBody ProductUpdateRequest request) {
     ProductResponse response = productService.updateProduct(id, request);
     return ResponseEntity.ok(response);
   }

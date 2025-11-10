@@ -30,12 +30,11 @@
         WHERE id = #{id}
     </select>
 
-    <!-- 전체 상품 조회 (페이징) -->
+    <!-- 전체 상품 조회 -->
     <select id="findAll" resultMap="ProductResultMap">
         SELECT id, name, description, price, stock_quantity, status, created_at, updated_at
         FROM products
         ORDER BY id DESC
-        LIMIT #{limit} OFFSET #{offset}
     </select>
 
     <!-- 전체 상품 개수 -->
@@ -62,28 +61,66 @@
         WHERE id = #{id}
     </delete>
 
-    <!-- 재고 감소 -->
-    <update id="decreaseStock">
-        UPDATE products
-        SET stock_quantity = stock_quantity - #{quantity},
-            status = CASE
-                WHEN stock_quantity - #{quantity} = 0 THEN 'SOLD_OUT'
-                ELSE status
-            END,
-            updated_at = NOW()
-        WHERE id = #{id}
-    </update>
 
-    <!-- 재고 증가 -->
-    <update id="increaseStock">
-        UPDATE products
-        SET stock_quantity = stock_quantity + #{quantity},
-            status = CASE
-                WHEN stock_quantity + #{quantity} > 0 AND status = 'SOLD_OUT' THEN 'AVAILABLE'
-                ELSE status
-            END,
-            updated_at = NOW()
-        WHERE id = #{id}
-    </update>
+    <!-- 카테고리 + 상품명 키워드 + 가격 범위로 검색 -->
+    <select id="findByCategoryIdAndNameContainingAndPriceBetween" resultMap="ProductResultMap">
+        SELECT id, name, description, price, stock_quantity, status, created_at, updated_at
+        FROM products
+        WHERE category_id = #{categoryId}
+          AND name LIKE CONCAT('%', #{keyword}, '%')
+          AND price BETWEEN #{minPrice} AND #{maxPrice}
+        ORDER BY id DESC
+    </select>
+
+    <!-- 카테고리별 조회 -->
+    <select id="findByCategoryId" resultMap="ProductResultMap">
+        SELECT id, name, description, price, stock_quantity, status, created_at, updated_at
+        FROM products
+        WHERE category_id = #{categoryId}
+        ORDER BY id DESC
+    </select>
+
+    <!-- 상품명 키워드 검색 -->
+    <select id="findByNameContaining" resultMap="ProductResultMap">
+        SELECT id, name, description, price, stock_quantity, status, created_at, updated_at
+        FROM products
+        WHERE name LIKE CONCAT('%', #{keyword}, '%')
+        ORDER BY id DESC
+    </select>
+
+    <!-- 가격 범위 조회 -->
+    <select id="findByPriceBetween" resultMap="ProductResultMap">
+        SELECT id, name, description, price, stock_quantity, status, created_at, updated_at
+        FROM products
+        WHERE price BETWEEN #{minPrice} AND #{maxPrice}
+        ORDER BY id DESC
+    </select>
+
+    <!-- 카테고리 + 가격 범위 -->
+    <select id="findByCategoryIdAndPriceBetween" resultMap="ProductResultMap">
+        SELECT id, name, description, price, stock_quantity, status, created_at, updated_at
+        FROM products
+        WHERE category_id = #{categoryId}
+          AND price BETWEEN #{minPrice} AND #{maxPrice}
+        ORDER BY id DESC
+    </select>
+
+    <!-- 상품명 키워드 + 가격 범위 -->
+    <select id="findByNameContainingAndPriceBetween" resultMap="ProductResultMap">
+        SELECT id, name, description, price, stock_quantity, status, created_at, updated_at
+        FROM products
+        WHERE name LIKE CONCAT('%', #{keyword}, '%')
+          AND price BETWEEN #{minPrice} AND #{maxPrice}
+        ORDER BY id DESC
+    </select>
+
+    <!-- 카테고리 + 상품명 키워드 -->
+    <select id="findByCategoryIdAndNameContaining" resultMap="ProductResultMap">
+        SELECT id, name, description, price, stock_quantity, status, created_at, updated_at
+        FROM products
+        WHERE category_id = #{categoryId}
+          AND name LIKE CONCAT('%', #{keyword}, '%')
+        ORDER BY id DESC
+    </select>
 
 </mapper>
