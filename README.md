@@ -149,10 +149,10 @@
 
   | Method | Endpoint | Description | Request Body | Response | Error |
   |--------|----------|-------------|--------------|----------|-------|
-  | POST | `/api/products` | 상품 등록 | `name`(1-100), `description`(max 500), `price`(0-1억), `stockQuantity`(≥0) | 201 Created | 400 (Validation) |
-  | GET | `/api/products` | 상품 목록 (페이징) | Query: `page`, `size`, `sort` | 200 OK | - |
+  | POST | `/api/products` | 상품 등록 | `name`(1-100), `description`(max 500), `price`(0-1억), `stock`(≥0), `categoryId`(필수) | 201 Created | 400 (Validation), 404 (카테고리 없음) |
+  | GET | `/api/products` | 전체 상품 목록 | - | 200 OK | - |
   | GET | `/api/products/{id}` | 상품 상세 조회 | - | 200 OK | 404 (상품 없음) |
-  | PUT | `/api/products/{id}` | 상품 수정 | `name`, `description`, `price`, `stockQuantity` | 200 OK | 404 (상품 없음) |
+  | PUT | `/api/products/{id}` | 상품 수정 | `name`, `description`, `price`, `stock`, `categoryId` | 200 OK | 404 (상품/카테고리 없음) |
   | DELETE | `/api/products/{id}` | 상품 삭제 | - | 204 No Content | 404 (상품 없음) |
 
   <details>
@@ -165,7 +165,8 @@
     "name": "무선 이어폰",
     "description": "고음질 블루투스 이어폰",
     "price": 89000,
-    "stockQuantity": 100
+    "stock": 100,
+    "categoryId": 1
   }
 
   // Response (201 Created)
@@ -175,47 +176,64 @@
     "description": "고음질 블루투스 이어폰",
     "price": 89000,
     "stock": 100,
-    "status": "AVAILABLE"
+    "status": "AVAILABLE",
+    "categoryId": 1,
+    "categoryName": "전자제품",
+    "createdAt": "2025-11-10T12:00:00",
+    "updatedAt": "2025-11-10T12:00:00"
   }
   ```
 
-  **상품 목록 조회 (GET /api/products?page=0&size=10&sort=id,desc)**
+  **전체 상품 목록 조회 (GET /api/products)**
+  ```json
+  // Response (200 OK)
+  [
+    {
+      "id": 1,
+      "name": "무선 이어폰",
+      "description": "고음질 블루투스 이어폰",
+      "price": 89000,
+      "stock": 100,
+      "status": "AVAILABLE",
+      "categoryId": 1,
+      "categoryName": "전자제품",
+      "createdAt": "2025-11-10T12:00:00",
+      "updatedAt": "2025-11-10T12:00:00"
+    }
+  ]
+  ```
+
+  **상품 상세 조회 (GET /api/products/{id})**
   ```json
   // Response (200 OK)
   {
-    "content": [
-      {
-        "id": 1,
-        "name": "무선 이어폰",
-        "description": "고음질 블루투스 이어폰",
-        "price": 89000,
-        "stock": 100,
-        "status": "AVAILABLE"
-      }
-    ],
-    "pageable": {
-      "pageNumber": 0,
-      "pageSize": 10
-    },
-    "totalElements": 1,
-    "totalPages": 1
+    "id": 1,
+    "name": "무선 이어폰",
+    "description": "고음질 블루투스 이어폰",
+    "price": 89000,
+    "stock": 100,
+    "status": "AVAILABLE",
+    "categoryId": 1,
+    "categoryName": "전자제품",
+    "createdAt": "2025-11-10T12:00:00",
+    "updatedAt": "2025-11-10T12:00:00"
   }
   ```
   </details>
 
 ---
- ### 📂 Category API
+
+  ### 📂 Category API
 
   | Method | Endpoint | Description | Request Body | Response | Error |
   |--------|----------|-------------|--------------|----------|-------|
-  | POST | `/api/categories` | 카테고리 생성 | `name`(필수), `description`, `parentId`(optional) | 201
-   Created | 400 (중복 이름) |
+  | POST | `/api/categories` | 카테고리 생성 | `name`(필수), `description`, `parentId`(optional) | 201 Created | 400 (중복 이름) |
   | GET | `/api/categories/{id}` | 카테고리 상세 조회 | - | 200 OK | 404 (카테고리 없음) |
   | GET | `/api/categories` | 전체 카테고리 조회 | - | 200 OK | - |
   | GET | `/api/categories/root` | 최상위 카테고리 조회 | - | 200 OK | - |
   | GET | `/api/categories/parent/{parentId}` | 부모별 자식 카테고리 조회 | - | 200 OK | - |
-  | PUT | `/api/categories/{id}` | 카테고리 수정 | `name`, `description`, `parentId` | 200 OK | 404
-  | DELETE | `/api/categories/{id}` | 카테고리 삭제 | - | 204 No Content | 400 (자식 있음), 404
+  | PUT | `/api/categories/{id}` | 카테고리 수정 | `name`, `description`, `parentId` | 200 OK | 404 (카테고리 없음) |
+  | DELETE | `/api/categories/{id}` | 카테고리 삭제 | - | 204 No Content | 400 (자식 있음), 404 (카테고리 없음) |
 
   <details>
   <summary><b>Request/Response 예시</b></summary>
@@ -240,61 +258,90 @@
     "id": 2,
     "name": "노트북",
     "description": "노트북 카테고리",
-    "parentId": 1
+    "parentId": 1,
+    "parentName": "전자제품",
+    "createdAt": "2025-11-10T12:00:00",
+    "updatedAt": "2025-11-10T12:00:00"
   }
+  ```
 
-  전체 카테고리 조회 (GET /api/categories)
+  **전체 카테고리 조회 (GET /api/categories)**
+  ```json
   // Response (200 OK)
   [
     {
       "id": 1,
       "name": "전자제품",
       "description": "전자제품 카테고리",
-      "parentId": null
+      "parentId": null,
+      "parentName": null,
+      "createdAt": "2025-11-10T12:00:00",
+      "updatedAt": "2025-11-10T12:00:00"
     },
     {
       "id": 2,
       "name": "노트북",
       "description": "노트북 카테고리",
-      "parentId": 1
+      "parentId": 1,
+      "parentName": "전자제품",
+      "createdAt": "2025-11-10T12:00:00",
+      "updatedAt": "2025-11-10T12:00:00"
     }
   ]
+  ```
 
-  최상위 카테고리 조회 (GET /api/categories/root)
+  **최상위 카테고리 조회 (GET /api/categories/root)**
+  ```json
   // Response (200 OK)
   [
     {
       "id": 1,
       "name": "전자제품",
       "description": "전자제품 카테고리",
-      "parentId": null
+      "parentId": null,
+      "parentName": null,
+      "createdAt": "2025-11-10T12:00:00",
+      "updatedAt": "2025-11-10T12:00:00"
     },
     {
       "id": 3,
       "name": "의류",
       "description": "의류 카테고리",
-      "parentId": null
+      "parentId": null,
+      "parentName": null,
+      "createdAt": "2025-11-10T12:00:00",
+      "updatedAt": "2025-11-10T12:00:00"
     }
   ]
+  ```
 
-  부모별 자식 카테고리 조회 (GET /api/categories/parent/1)
+  **부모별 자식 카테고리 조회 (GET /api/categories/parent/1)**
+  ```json
   // Response (200 OK)
   [
     {
       "id": 2,
       "name": "노트북",
       "description": "노트북 카테고리",
-      "parentId": 1
+      "parentId": 1,
+      "parentName": "전자제품",
+      "createdAt": "2025-11-10T12:00:00",
+      "updatedAt": "2025-11-10T12:00:00"
     },
     {
       "id": 4,
       "name": "스마트폰",
       "description": "스마트폰 카테고리",
-      "parentId": 1
+      "parentId": 1,
+      "parentName": "전자제품",
+      "createdAt": "2025-11-10T12:00:00",
+      "updatedAt": "2025-11-10T12:00:00"
     }
   ]
+  ```
 
-  카테고리 수정 (PUT /api/categories/2)
+  **카테고리 수정 (PUT /api/categories/2)**
+  ```json
   // Request
   {
     "name": "노트북(수정)",
@@ -307,8 +354,15 @@
     "id": 2,
     "name": "노트북(수정)",
     "description": "수정된 설명",
-    "parentId": 1
+    "parentId": 1,
+    "parentName": "전자제품",
+    "createdAt": "2025-11-10T12:00:00",
+    "updatedAt": "2025-11-10T12:01:00"
   }
+  ```
+  </details>
+
+---
 
   ### 📦 Order API
 
@@ -335,17 +389,19 @@
   {
     "id": 1,
     "userId": 1,
-    "status": "PENDING",
+    "userName": "홍길동",
     "totalAmount": 178000,
+    "status": "PENDING",
     "orderItems": [
       {
         "productId": 1,
         "productName": "무선 이어폰",
-        "quantity": 2,
         "price": 89000,
+        "quantity": 2,
         "subtotal": 178000
       }
-    ]
+    ],
+    "createdAt": "2025-11-10T12:00:00"
   }
   ```
 
@@ -357,13 +413,33 @@
       {
         "id": 1,
         "userId": 1,
-        "status": "PENDING",
+        "userName": "홍길동",
         "totalAmount": 178000,
-        "orderItems": [...]
+        "status": "PENDING",
+        "orderItems": [
+          {
+            "productId": 1,
+            "productName": "무선 이어폰",
+            "price": 89000,
+            "quantity": 2,
+            "subtotal": 178000
+          }
+        ],
+        "createdAt": "2025-11-10T12:00:00"
       }
     ],
+    "pageable": {
+      "pageNumber": 0,
+      "pageSize": 10,
+      "sort": {
+        "sorted": true,
+        "unsorted": false
+      }
+    },
     "totalElements": 1,
-    "totalPages": 1
+    "totalPages": 1,
+    "last": true,
+    "first": true
   }
   ```
   </details>
@@ -398,10 +474,52 @@
   {
     "id": 1,
     "userId": 1,
+    "userName": "홍길동",
     "orderId": 1,
     "reason": "상품 불량",
     "status": "PENDING",
-    "createdAt": "2025-11-09T23:55:00"
+    "createdAt": "2025-11-10T12:00:00",
+    "updatedAt": "2025-11-10T12:00:00"
+  }
+  ```
+
+  **환불 상세 조회 (GET /api/refunds/{id})**
+  ```json
+  // Response (200 OK)
+  {
+    "id": 1,
+    "userId": 1,
+    "userName": "홍길동",
+    "orderId": 1,
+    "reason": "상품 불량",
+    "status": "PENDING",
+    "createdAt": "2025-11-10T12:00:00",
+    "updatedAt": "2025-11-10T12:00:00"
+  }
+  ```
+
+  **전체 환불 목록 조회 (GET /api/refunds?page=0&size=10)**
+  ```json
+  // Response (200 OK)
+  {
+    "content": [
+      {
+        "id": 1,
+        "userId": 1,
+        "userName": "홍길동",
+        "orderId": 1,
+        "reason": "상품 불량",
+        "status": "PENDING",
+        "createdAt": "2025-11-10T12:00:00",
+        "updatedAt": "2025-11-10T12:00:00"
+      }
+    ],
+    "pageable": {
+      "pageNumber": 0,
+      "pageSize": 10
+    },
+    "totalElements": 1,
+    "totalPages": 1
   }
   ```
 
@@ -411,11 +529,12 @@
   {
     "id": 1,
     "userId": 1,
+    "userName": "홍길동",
     "orderId": 1,
     "reason": "상품 불량",
     "status": "APPROVED",
-    "createdAt": "2025-11-09T23:55:00",
-    "updatedAt": "2025-11-09T23:56:00"
+    "createdAt": "2025-11-10T12:00:00",
+    "updatedAt": "2025-11-10T12:05:00"
   }
   ```
 
@@ -428,12 +547,14 @@
   {
     "id": 1,
     "userId": 1,
+    "userName": "홍길동",
     "orderId": 1,
     "reason": "상품 불량",
     "status": "REJECTED",
-    "rejectReason": "반품 기간 초과",
-    "createdAt": "2025-11-09T23:55:00",
-    "updatedAt": "2025-11-09T23:56:00"
+    "createdAt": "2025-11-10T12:00:00",
+    "updatedAt": "2025-11-10T12:05:00"
   }
   ```
   </details>
+
+---
