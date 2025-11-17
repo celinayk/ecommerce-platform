@@ -1,8 +1,14 @@
 package com.ecommerce.platform.global.common.exception;
 
+import com.ecommerce.platform.domain.category.exception.CategoryException;
+import com.ecommerce.platform.domain.order.exception.OrderException;
+import com.ecommerce.platform.domain.product.exception.ProductException;
+import com.ecommerce.platform.domain.refund.exception.RefundException;
+import com.ecommerce.platform.domain.user.exception.UserException;
 import com.ecommerce.platform.global.common.response.ErrorCode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -28,7 +34,82 @@ public class GlobalExceptionHandler {
     errorResponse.put("message", e.getMessage());
 
     return ResponseEntity
-        .status(e.getErrorCode().getHttpStatus())
+        .status(HttpStatus.OK)
+        .body(errorResponse);
+  }
+
+  @ExceptionHandler(UserException.class)
+  public ResponseEntity<Map<String, Object>> handleUserException(UserException e) {
+    log.error("UserException: code={}, message={}", e.getErrorCode().getCode(), e.getMessage());
+
+    Map<String, Object> errorResponse = new HashMap<>();
+    errorResponse.put("timestamp", LocalDateTime.now());
+    errorResponse.put("httpStatus", e.getErrorCode().getHttpStatus());
+    errorResponse.put("code", e.getErrorCode().getCode());
+    errorResponse.put("message", e.getMessage());
+
+    return ResponseEntity
+        .status(HttpStatus.OK)
+        .body(errorResponse);
+  }
+
+  @ExceptionHandler(ProductException.class)
+  public ResponseEntity<Map<String, Object>> handleProductException(ProductException e) {
+    log.error("ProductException: code={}, message={}", e.getErrorCode().getCode(), e.getMessage());
+
+    Map<String, Object> errorResponse = new HashMap<>();
+    errorResponse.put("timestamp", LocalDateTime.now());
+    errorResponse.put("httpStatus", e.getErrorCode().getHttpStatus());
+    errorResponse.put("code", e.getErrorCode().getCode());
+    errorResponse.put("message", e.getMessage());
+
+    return ResponseEntity
+        .status(HttpStatus.OK)
+        .body(errorResponse);
+  }
+
+  @ExceptionHandler(OrderException.class)
+  public ResponseEntity<Map<String, Object>> handleOrderException(OrderException e) {
+    log.error("OrderException: code={}, message={}", e.getErrorCode().getCode(), e.getMessage());
+
+    Map<String, Object> errorResponse = new HashMap<>();
+    errorResponse.put("timestamp", LocalDateTime.now());
+    errorResponse.put("httpStatus", e.getErrorCode().getHttpStatus());
+    errorResponse.put("code", e.getErrorCode().getCode());
+    errorResponse.put("message", e.getMessage());
+
+    return ResponseEntity
+        .status(HttpStatus.OK)
+        .body(errorResponse);
+  }
+
+  @ExceptionHandler(CategoryException.class)
+  public ResponseEntity<Map<String, Object>> handleCategoryException(CategoryException e) {
+    log.error("CategoryException: code={}, message={}", e.getErrorCode().getCode(), e.getMessage());
+
+    Map<String, Object> errorResponse = new HashMap<>();
+    errorResponse.put("timestamp", LocalDateTime.now());
+    errorResponse.put("httpStatus", e.getErrorCode().getHttpStatus());
+    errorResponse.put("code", e.getErrorCode().getCode());
+    errorResponse.put("message", e.getMessage());
+
+    return ResponseEntity
+        .status(HttpStatus.OK)
+        .body(errorResponse);
+  }
+
+  @ExceptionHandler(RefundException.class)
+  public ResponseEntity<Map<String, Object>> handleRefundException(RefundException e) {
+    log.error("RefundException: code={}, message={}", e.getErrorCode().getCode(), e.getMessage());
+
+    Map<String, Object> errorResponse = new HashMap<>();
+    errorResponse.put("timestamp", LocalDateTime.now());
+    errorResponse.put("httpStatus", e.getErrorCode().getHttpStatus());
+    errorResponse.put("code", e.getErrorCode().getCode());
+    errorResponse.put("message", e.getMessage());
+
+    return ResponseEntity
+        .status(HttpStatus.OK)
         .body(errorResponse);
   }
 
@@ -51,7 +132,7 @@ public class GlobalExceptionHandler {
     errorResponse.put("errors", errors);
 
     return ResponseEntity
-        .status(HttpStatus.BAD_REQUEST)
+        .status(HttpStatus.OK)
         .body(errorResponse);
   }
 
