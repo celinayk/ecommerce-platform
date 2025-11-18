@@ -24,7 +24,6 @@
   ### 프로젝트 목표
   - ✅ RESTful API 설계 및 구현
   - ✅ 체계적인 예외 처리 및 Validation
-  - ✅ 도메인 주도 설계 (DDD) 적용
   - 🔜 Spring Security + JWT 인증/인가
   - 🔜 Redis 기반 장바구니 및 캐싱
   - 🔜 Kafka 이벤트 기반 아키텍처
