@@ -37,12 +37,19 @@
         WHERE c.name = #{name}
     </select>
 
-    <!-- 전체 카테고리 조회 -->
+    <!-- 전체 카테고리 조회 페이징 처리-->
     <select id="findAll" resultMap="CategoryResultMap">
         SELECT c.id, c.name, c.description, c.parent_id, c.created_at, c.updated_at
         FROM categories c
         ORDER BY c.id ASC
+        LIMIT #{limit} OFFSET #{offset}
     </select>
+
+    <select id="count" resultType="int">
+        SELECT COUNT(*)
+        FROM categories
+    </select>
+
 
     <!-- 부모 카테고리로 자식 카테고리 조회 -->
     <select id="findByParentId" resultMap="CategoryResultMap">

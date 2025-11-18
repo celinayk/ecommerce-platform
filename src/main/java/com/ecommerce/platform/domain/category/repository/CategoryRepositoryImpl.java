@@ -41,9 +41,15 @@ public class CategoryRepositoryImpl implements CategoryRepository {
   }
 
   @Override
-  public List<Category> findAll() {
-    return categoryMapper.findAll();
+  public List<Category> findAll(int offset, int limit) {
+    return categoryMapper.findAll(offset, limit);
   }
+
+  @Override
+  public int count() {
+    return categoryMapper.count();
+  }
+
 
   @Override
   public List<Category> findByParentId(Long parentId) {

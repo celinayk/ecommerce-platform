@@ -18,8 +18,10 @@ public interface CategoryMapper {
   // 이름으로 카테고리 조회
   Category findByName(@Param("name") String name);
 
-  // 전체 카테고리 조회
-  List<Category> findAll();
+  // 전체 카테고리 조회 -> 페이징
+  List<Category> findAll(@Param("offset") int offset, @Param("limit") int limit);
+
+  int count();
 
   // 부모 카테고리로 자식 카테고리 조회
   List<Category> findByParentId(@Param("parentId") Long parentId);

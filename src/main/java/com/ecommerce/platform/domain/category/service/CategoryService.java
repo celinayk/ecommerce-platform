@@ -1,14 +1,19 @@
 package com.ecommerce.platform.domain.category.service;
 
+import com.ecommerce.platform.domain.category.dto.CategoryResponse;
 import com.ecommerce.platform.domain.category.entity.Category;
 import com.ecommerce.platform.domain.category.exception.CategoryException;
 import com.ecommerce.platform.domain.category.repository.CategoryRepository;
 import com.ecommerce.platform.global.common.response.ErrorCode;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * CategoryService
@@ -44,8 +49,19 @@ public class CategoryService {
   }
 
 
-  public List<Category> findAll() {
-    return categoryRepository.findAll();
+  // 페이징 처리
+  public Page<CategoryResponse> findAll(Pageable pageable) {
+    int offset = (int) pageable.getOffset();
+    int limit = pageable.getPageSize();
+
+    List<Category> categories = categoryRepository.findAll(offset, limit);
+    int total = categoryRepository.count();
+
+    List<CategoryResponse> content = categories.stream()
+        .map(CategoryResponse::from)
+        .collect(Collectors.toList());
+
+    return new PageImpl<>(content, pageable, total);
   }
 
 
