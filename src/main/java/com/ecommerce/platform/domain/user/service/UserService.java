@@ -4,8 +4,8 @@ import com.ecommerce.platform.domain.user.dto.UserLoginRequest;
 import com.ecommerce.platform.domain.user.dto.UserResponse;
 import com.ecommerce.platform.domain.user.dto.UserSignupRequest;
 import com.ecommerce.platform.domain.user.entity.User;
-import com.ecommerce.platform.domain.user.exception.UserException;
 import com.ecommerce.platform.domain.user.repository.UserRepository;
+import com.ecommerce.platform.global.common.exception.CustomException;
 import com.ecommerce.platform.global.common.response.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -26,7 +26,7 @@ public class UserService {
     // 이메일 중복 체크
     userRepository.findByEmail(request.getEmail())
         .ifPresent(user -> {
-          throw new UserException(ErrorCode.EMAIL_ALREADY_EXISTS);
+          throw new CustomException(ErrorCode.EMAIL_ALREADY_EXISTS);
         });
 
     // DTO -> Entity 변환
@@ -43,14 +43,14 @@ public class UserService {
   // ID로 회원 조회
   public UserResponse findById(Long id) {
     User user = userRepository.findById(id)
-        .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
+        .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
     return UserResponse.from(user);
   }
 
   // 이메일로 회원 조회
   public UserResponse findByEmail(String email) {
     User user = userRepository.findByEmail(email)
-        .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
+        .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
     return UserResponse.from(user);
   }
 
@@ -65,11 +65,11 @@ public class UserService {
   public UserResponse login(UserLoginRequest request) {
     // 이메일로 사용자 조회
     User user = userRepository.findByEmail(request.getEmail())
-        .orElseThrow(() -> new UserException(ErrorCode.PASSWORD_UNMATCHED));
+        .orElseThrow(() -> new CustomException(ErrorCode.PASSWORD_UNMATCHED));
 
     // 비밀번호 확인 (현재는 평문 비교, 나중에 암호화 추가 예정)
     if (!user.getPassword().equals(request.getPassword())) {
-      throw new UserException(ErrorCode.PASSWORD_UNMATCHED);
+      throw new CustomException(ErrorCode.PASSWORD_UNMATCHED);
     }
 
     return UserResponse.from(user);
