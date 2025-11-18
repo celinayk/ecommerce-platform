@@ -1,21 +1,20 @@
-package com.ecommerce.platform.global.common.exception;
+package com.ecommerce.platform.domain.order.exception;
 
 import com.ecommerce.platform.global.common.response.ErrorCode;
 import lombok.Getter;
 
 @Getter
-public class CustomException extends RuntimeException {
+public class OrderException extends RuntimeException {
 
   private final ErrorCode errorCode;
 
-  public CustomException(ErrorCode errorCode) {
+  public OrderException(ErrorCode errorCode) {
     super(errorCode.getMessage());
     this.errorCode = errorCode;
   }
 
-  public CustomException(ErrorCode errorCode, String message) {
+  public OrderException(ErrorCode errorCode, String message) {
     super(message);
     this.errorCode = errorCode;
   }
 }
-

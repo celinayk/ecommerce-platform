@@ -1,14 +1,15 @@
 package com.ecommerce.platform.domain.product.service;
 
 import com.ecommerce.platform.domain.category.entity.Category;
+import com.ecommerce.platform.domain.category.exception.CategoryException;
 import com.ecommerce.platform.domain.category.repository.CategoryRepository;
 import com.ecommerce.platform.domain.product.dto.ProductCreateRequest;
 import com.ecommerce.platform.domain.product.dto.ProductResponse;
 import com.ecommerce.platform.domain.product.dto.ProductSearchRequest;
 import com.ecommerce.platform.domain.product.dto.ProductUpdateRequest;
 import com.ecommerce.platform.domain.product.entity.Product;
+import com.ecommerce.platform.domain.product.exception.ProductException;
 import com.ecommerce.platform.domain.product.repository.ProductRepository;
-import com.ecommerce.platform.global.common.exception.CustomException;
 import com.ecommerce.platform.global.common.response.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -31,7 +32,7 @@ public class ProductService {
     Category category = null;
     if(request.getCategoryId() != null) {
       category = categoryRepository.findById(request.getCategoryId())
-          .orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_NOT_FOUND));
+          .orElseThrow(() -> new CategoryException(ErrorCode.CATEGORY_NOT_FOUND));
     }
 
     // 상품 생성
@@ -58,7 +59,7 @@ public class ProductService {
   // 상품 상세 조회
   public ProductResponse getProductById(Long id) {
     Product product = productRepository.findById(id)
-        .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
+        .orElseThrow(() -> new ProductException(ErrorCode.PRODUCT_NOT_FOUND));
     return ProductResponse.from(product);
   }
 
@@ -68,7 +69,7 @@ public class ProductService {
     // 카테고리 기반 검색
     if(request.getCategoryId() != null) {
       Category category = categoryRepository.findById(request.getCategoryId())
-          .orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_NOT_FOUND));
+          .orElseThrow(() -> new CategoryException(ErrorCode.CATEGORY_NOT_FOUND));
 
       products = productRepository.findByCategoryAndNameContainingAndPriceBetween(
           category,
@@ -105,12 +106,12 @@ public class ProductService {
   @Transactional
   public ProductResponse updateProduct(Long productId, ProductUpdateRequest request) {
     Product product = productRepository.findById(productId)
-        .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
+        .orElseThrow(() -> new ProductException(ErrorCode.PRODUCT_NOT_FOUND));
 
     // 카테고리 변경
     if(request.getCategoryId() != null) {
       Category category = categoryRepository.findById(request.getCategoryId())
-          .orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_NOT_FOUND));
+          .orElseThrow(() -> new CategoryException(ErrorCode.CATEGORY_NOT_FOUND));
       product.updateCategory(category);
 
     }
@@ -128,7 +129,7 @@ public class ProductService {
   @Transactional
   public void deleteProduct(Long id) {
     if (!productRepository.existsById(id)) {
-      throw new CustomException(ErrorCode.PRODUCT_NOT_FOUND);
+      throw new ProductException(ErrorCode.PRODUCT_NOT_FOUND);
     }
     productRepository.deleteById(id);
   }
@@ -136,6 +137,6 @@ public class ProductService {
   // OrderService에서 사용하는 메서드 (호환성 유지)
   public Product findOne(Long itemId) {
     return productRepository.findById(itemId)
-        .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
+        .orElseThrow(() -> new ProductException(ErrorCode.PRODUCT_NOT_FOUND));
   }
 }
