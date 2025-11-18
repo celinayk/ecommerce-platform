@@ -7,6 +7,9 @@ import com.ecommerce.platform.domain.category.entity.Category;
 import com.ecommerce.platform.domain.category.service.CategoryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -46,13 +49,12 @@ public class CategoryController {
     return ResponseEntity.ok(CategoryResponse.from(category));
   }
 
-  // 전체 카테고리 조회
+  // 전체 카테고리 조회 -> 페이징 처리
   @GetMapping
-  public ResponseEntity<List<CategoryResponse>> getAllCategories() {
-    List<Category> categories = categoryService.findAll();
-    List<CategoryResponse> responses = categories.stream()
-        .map(CategoryResponse::from)
-        .collect(Collectors.toList());
+  public ResponseEntity<Page<CategoryResponse>> getAllCategories(
+      @PageableDefault(size = 10, sort = "id", direction = Sort.Direction.DESC) Pageable pageable
+  ) {
+    Page<CategoryResponse> responses = categoryService.findAll(pageable);
     return ResponseEntity.ok(responses);
   }
 

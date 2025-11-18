@@ -17,7 +17,9 @@ public interface CategoryRepository {
 
   Optional<Category> findByName(String name);
 
-  List<Category> findAll();
+  List<Category> findAll(int offset, int limit);
+
+  int count();
 
   List<Category> findByParentId(Long parentId);
 
