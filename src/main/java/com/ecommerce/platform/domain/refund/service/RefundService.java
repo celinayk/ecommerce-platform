@@ -3,7 +3,6 @@ package com.ecommerce.platform.domain.refund.service;
 import com.ecommerce.platform.domain.order.entity.Order;
 import com.ecommerce.platform.domain.order.entity.OrderItem;
 import com.ecommerce.platform.domain.order.entity.OrderStatus;
-import com.ecommerce.platform.domain.order.exception.OrderException;
 import com.ecommerce.platform.domain.order.repository.OrderItemRepository;
 import com.ecommerce.platform.domain.order.repository.OrderRepository;
 import com.ecommerce.platform.domain.product.entity.Product;
@@ -12,11 +11,10 @@ import com.ecommerce.platform.domain.refund.dto.RefundCreateRequest;
 import com.ecommerce.platform.domain.refund.dto.RefundResponse;
 import com.ecommerce.platform.domain.refund.entity.Refund;
 import com.ecommerce.platform.domain.refund.entity.RefundStatus;
-import com.ecommerce.platform.domain.refund.exception.RefundException;
 import com.ecommerce.platform.domain.refund.repository.RefundRepository;
 import com.ecommerce.platform.domain.user.entity.User;
-import com.ecommerce.platform.domain.user.exception.UserException;
 import com.ecommerce.platform.domain.user.repository.UserRepository;
+import com.ecommerce.platform.global.common.exception.CustomException;
 import com.ecommerce.platform.global.common.response.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -41,26 +39,26 @@ public class RefundService {
   public RefundResponse createRefund(RefundCreateRequest refundCreateRequest) {
     // 1. 사용자 조회
     User user = userRepository.findById(refundCreateRequest.getUserId())
-        .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
+        .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
     // 2. 주문 조회
     Order order = orderRepository.findById(refundCreateRequest.getOrderId())
-        .orElseThrow(() -> new OrderException(ErrorCode.ORDER_NOT_FOUND));
+        .orElseThrow(() -> new CustomException(ErrorCode.ORDER_NOT_FOUND));
 
     // 3. 본인 주문 확인
     if (!order.getUser().getId().equals(user.getId())) {
-      throw new RefundException(ErrorCode.UNAUTHORIZED_REFUND);
+      throw new CustomException(ErrorCode.UNAUTHORIZED_REFUND);
     }
 
     // 4. 주문이 완료된 상태인지 확인
     if (order.getStatus() != OrderStatus.COMPLETED) {
-      throw new RefundException(ErrorCode.ORDER_NOT_COMPLETED);
+      throw new CustomException(ErrorCode.ORDER_NOT_COMPLETED);
     }
 
     // 5. 이미 환불 요청된 주문인지 확인
     List<Refund> existingRefunds = refundRepository.findByOrderId(order.getId());
     if (!existingRefunds.isEmpty()) {
-      throw new RefundException(ErrorCode.REFUND_ALREADY_EXISTS);
+      throw new CustomException(ErrorCode.REFUND_ALREADY_EXISTS);
     }
 
     // 6. 환불 생성
@@ -77,7 +75,7 @@ public class RefundService {
   // 환불 상세 조회
   public RefundResponse findRefundById(Long refundId) {
     Refund refund = refundRepository.findById(refundId)
-        .orElseThrow(() -> new RefundException(ErrorCode.REFUND_NOT_FOUND));
+        .orElseThrow(() -> new CustomException(ErrorCode.REFUND_NOT_FOUND));
     return RefundResponse.from(refund);
   }
 
@@ -116,7 +114,7 @@ public class RefundService {
   public RefundResponse approveRefund(Long refundId) {
     // 1. 환불 조회
     Refund refund = refundRepository.findById(refundId)
-        .orElseThrow(() -> new RefundException(ErrorCode.REFUND_NOT_FOUND));
+        .orElseThrow(() -> new CustomException(ErrorCode.REFUND_NOT_FOUND));
 
     // 2. 환불 승인
     refund.approve();
@@ -140,7 +138,7 @@ public class RefundService {
   public RefundResponse rejectRefund(Long refundId, String rejectReason) {
     // 환불 조회
     Refund refund = refundRepository.findById(refundId)
-        .orElseThrow(() -> new RefundException(ErrorCode.REFUND_NOT_FOUND));
+        .orElseThrow(() -> new CustomException(ErrorCode.REFUND_NOT_FOUND));
 
     // 환불 상태 확인
     refund.reject();

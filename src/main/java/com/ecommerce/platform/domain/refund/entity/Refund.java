@@ -2,8 +2,8 @@ package com.ecommerce.platform.domain.refund.entity;
 
 import com.ecommerce.platform.domain.common.BaseEntity;
 import com.ecommerce.platform.domain.order.entity.Order;
-import com.ecommerce.platform.domain.refund.exception.RefundException;
 import com.ecommerce.platform.domain.user.entity.User;
+import com.ecommerce.platform.global.common.exception.CustomException;
 import com.ecommerce.platform.global.common.response.ErrorCode;
 import lombok.Builder;
 import lombok.Getter;
@@ -34,14 +34,14 @@ public class Refund extends BaseEntity {
   // 비즈니스 로직 -> 상태값을 바꾸는거라 엔티티 클래스에 작성
   public void approve() {
     if(this.status != RefundStatus.PENDING) {
-      throw new RefundException(ErrorCode.REFUND_ALREADY_PROCESSED);
+      throw new CustomException(ErrorCode.REFUND_ALREADY_PROCESSED);
     }
     this.status = RefundStatus.APPROVED;
   }
 
   public void reject() {
     if(this.status != RefundStatus.PENDING) {
-      throw new RefundException(ErrorCode.REFUND_ALREADY_PROCESSED);
+      throw new CustomException(ErrorCode.REFUND_ALREADY_PROCESSED);
     }
     this.status = RefundStatus.REJECTED;
   }

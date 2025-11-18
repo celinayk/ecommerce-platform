@@ -5,15 +5,13 @@ import com.ecommerce.platform.domain.order.dto.OrderResponse;
 import com.ecommerce.platform.domain.order.entity.Order;
 import com.ecommerce.platform.domain.order.entity.OrderItem;
 import com.ecommerce.platform.domain.order.entity.OrderStatus;
-import com.ecommerce.platform.domain.order.exception.OrderException;
 import com.ecommerce.platform.domain.order.repository.OrderItemRepository;
 import com.ecommerce.platform.domain.order.repository.OrderRepository;
 import com.ecommerce.platform.domain.product.entity.Product;
-import com.ecommerce.platform.domain.product.exception.ProductException;
 import com.ecommerce.platform.domain.product.repository.ProductRepository;
 import com.ecommerce.platform.domain.user.entity.User;
-import com.ecommerce.platform.domain.user.exception.UserException;
 import com.ecommerce.platform.domain.user.repository.UserRepository;
+import com.ecommerce.platform.global.common.exception.CustomException;
 import com.ecommerce.platform.global.common.response.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -39,10 +37,10 @@ public class OrderService {
   public OrderResponse createOrder(OrderRequest request) {
     // 엔티티 조회
     User user = userRepository.findById(request.getUserId())
-        .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
+        .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
     Product product = productRepository.findById(request.getProductId())
-        .orElseThrow(() -> new ProductException(ErrorCode.PRODUCT_NOT_FOUND));
+        .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
 
     // 재고 감소 (도메인 로직)
     product.decreaseStock(request.getCount());
@@ -71,7 +69,7 @@ public class OrderService {
 
     // 저장된 주문 조회 (orderItems 포함)
     Order savedOrder = orderRepository.findById(order.getId())
-        .orElseThrow(() -> new OrderException(ErrorCode.ORDER_NOT_FOUND));
+        .orElseThrow(() -> new CustomException(ErrorCode.ORDER_NOT_FOUND));
     return OrderResponse.from(savedOrder);
   }
 
@@ -93,7 +91,7 @@ public class OrderService {
   // 주문 상세 조회
   public OrderResponse getOrderById(Long orderId) {
     Order order = orderRepository.findById(orderId)
-        .orElseThrow(() -> new OrderException(ErrorCode.ORDER_NOT_FOUND));
+        .orElseThrow(() -> new CustomException(ErrorCode.ORDER_NOT_FOUND));
     return OrderResponse.from(order);
   }
 
@@ -101,7 +99,7 @@ public class OrderService {
   @Transactional
   public void cancelOrder(Long orderId) {
     Order order = orderRepository.findById(orderId)
-        .orElseThrow(() -> new OrderException(ErrorCode.ORDER_NOT_FOUND));
+        .orElseThrow(() -> new CustomException(ErrorCode.ORDER_NOT_FOUND));
 
     if (order.getStatus() == OrderStatus.CANCELED) {
       throw new IllegalStateException("이미 취소된 주문입니다.");
@@ -114,7 +112,7 @@ public class OrderService {
     List<OrderItem> orderItems = orderItemRepository.findByOrderId(orderId);
     for (OrderItem orderItem : orderItems) {
       Product product = productRepository.findById(orderItem.getProduct().getId())
-          .orElseThrow(() -> new ProductException(ErrorCode.PRODUCT_NOT_FOUND));
+          .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
       product.increaseStock(orderItem.getQuantity());
       productRepository.save(product);
     }
