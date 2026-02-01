@@ -16,7 +16,7 @@ public class User extends BaseEntity {
   private String email;
   private String password;
   private String name;
-  private Role role = Role.USER;
+  private Role role = Role.CUSTOMER;
   private LocalDateTime createdAt;
   private LocalDateTime updatedAt;
 
@@ -29,7 +29,7 @@ public class User extends BaseEntity {
     this.name = name;
     this.email = email;
     this.password = password;
-    this.role = Role.USER; // 기본값 설정
+    this.role = Role.CUSTOMER; // 기본값 설정
   }
 
 }
