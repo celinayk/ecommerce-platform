@@ -1,5 +1,6 @@
 package com.ecommerce.platform.global.common.exception;
 
+import com.ecommerce.platform.domain.cart.exception.CartException;
 import com.ecommerce.platform.domain.category.exception.CategoryException;
 import com.ecommerce.platform.domain.order.exception.OrderException;
 import com.ecommerce.platform.domain.product.exception.ProductException;
@@ -101,6 +102,21 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(RefundException.class)
   public ResponseEntity<Map<String, Object>> handleRefundException(RefundException e) {
     log.error("RefundException: code={}, message={}", e.getErrorCode().getCode(), e.getMessage());
+
+    Map<String, Object> errorResponse = new HashMap<>();
+    errorResponse.put("timestamp", LocalDateTime.now());
+    errorResponse.put("httpStatus", e.getErrorCode().getHttpStatus());
+    errorResponse.put("code", e.getErrorCode().getCode());
+    errorResponse.put("message", e.getMessage());
+
+    return ResponseEntity
+        .status(HttpStatus.OK)
+        .body(errorResponse);
+  }
+
+  @ExceptionHandler(CartException.class)
+  public ResponseEntity<Map<String, Object>> handleCartException(CartException e) {
+    log.error("CartException: code={}, message={}", e.getErrorCode().getCode(), e.getMessage());
 
     Map<String, Object> errorResponse = new HashMap<>();
     errorResponse.put("timestamp", LocalDateTime.now());

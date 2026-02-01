@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ecommerce.platform.domain.cart.mapper.CartItemMapper">
+
+    <!-- Result Map -->
+    <resultMap id="CartItemResultMap" type="com.ecommerce.platform.domain.cart.entity.CartItem">
+        <id property="id" column="id"/>
+        <result property="quantity" column="quantity"/>
+        <result property="isSelected" column="is_selected"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+        <association property="product" javaType="com.ecommerce.platform.domain.product.entity.Product">
+            <id property="id" column="product_id"/>
+            <result property="name" column="product_name"/>
+            <result property="price" column="product_price"/>
+            <result property="stock" column="product_stock"/>
+            <result property="status" column="product_status"/>
+        </association>
+    </resultMap>
+
+    <!-- 장바구니 상품 저장 -->
+    <insert id="insert" parameterType="com.ecommerce.platform.domain.cart.entity.CartItem"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO cart_items (cart_id, product_id, quantity, is_selected, created_at, updated_at)
+        VALUES (#{cart.id}, #{product.id}, #{quantity}, #{isSelected}, NOW(), NOW())
+    </insert>
+
+    <!-- ID로 장바구니 상품 조회 -->
+    <select id="findById" resultMap="CartItemResultMap">
+        SELECT ci.id, ci.quantity, ci.is_selected, ci.created_at, ci.updated_at,
+               ci.product_id, p.name as product_name, p.price as product_price,
+               p.stock_quantity as product_stock, p.status as product_status
+        FROM cart_items ci
+        INNER JOIN products p ON ci.product_id = p.id
+        WHERE ci.id = #{id}
+    </select>
+
+    <!-- 장바구니 ID로 모든 상품 조회 -->
+    <select id="findByCartId" resultMap="CartItemResultMap">
+        SELECT ci.id, ci.quantity, ci.is_selected, ci.created_at, ci.updated_at,
+               ci.product_id, p.name as product_name, p.price as product_price,
+               p.stock_quantity as product_stock, p.status as product_status
+        FROM cart_items ci
+        INNER JOIN products p ON ci.product_id = p.id
+        WHERE ci.cart_id = #{cartId}
+        ORDER BY ci.created_at DESC
+    </select>
+
+    <!-- 장바구니 ID + 상품 ID로 조회 -->
+    <select id="findByCartIdAndProductId" resultMap="CartItemResultMap">
+        SELECT ci.id, ci.quantity, ci.is_selected, ci.created_at, ci.updated_at,
+               ci.product_id, p.name as product_name, p.price as product_price,
+               p.stock_quantity as product_stock, p.status as product_status
+        FROM cart_items ci
+        INNER JOIN products p ON ci.product_id = p.id
+        WHERE ci.cart_id = #{cartId} AND ci.product_id = #{productId}
+    </select>
+
+    <!-- 수량 수정 -->
+    <update id="updateQuantity">
+        UPDATE cart_items
+        SET quantity = #{quantity}, updated_at = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <!-- 선택 상태 수정 -->
+    <update id="updateSelected">
+        UPDATE cart_items
+        SET is_selected = #{isSelected}, updated_at = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <!-- 전체 선택/해제 -->
+    <update id="updateAllSelected">
+        UPDATE cart_items
+        SET is_selected = #{isSelected}, updated_at = NOW()
+        WHERE cart_id = #{cartId}
+    </update>
+
+    <!-- 장바구니 상품 삭제 -->
+    <delete id="deleteById">
+        DELETE FROM cart_items
+        WHERE id = #{id}
+    </delete>
+
+    <!-- 장바구니 ID로 모든 상품 삭제 -->
+    <delete id="deleteByCartId">
+        DELETE FROM cart_items
+        WHERE cart_id = #{cartId}
+    </delete>
+
+    <!-- 선택된 상품만 삭제 -->
+    <delete id="deleteSelectedByCartId">
+        DELETE FROM cart_items
+        WHERE cart_id = #{cartId} AND is_selected = true
+    </delete>
+
+</mapper>

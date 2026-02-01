@@ -33,7 +33,12 @@ public enum ErrorCode {
   REFUND_AMOUNT_EXCEEDED(400, 5006, "환불 금액이 주문 금액을 초과했습니다."),
   REFUND_PERIOD_EXPIRED(400, 5007, "환불 가능 기간이 지났습니다."),
   ORDER_NOT_COMPLETED(400, 5008, "완료된 주문만 환불 가능합니다."),
-  REFUND_ALREADY_PROCESSED(400, 5009, "이미 처리된 환불 요청입니다.");
+  REFUND_ALREADY_PROCESSED(400, 5009, "이미 처리된 환불 요청입니다."),
+
+  // 장바구니 (6xxx)
+  CART_NOT_FOUND(404, 6001, "장바구니가 존재하지 않습니다."),
+  CART_ITEM_NOT_FOUND(404, 6002, "장바구니 상품이 존재하지 않습니다."),
+  CART_ITEM_ALREADY_EXISTS(400, 6003, "이미 장바구니에 있는 상품입니다.");
 
   private final int httpStatus;
   private final int code;
