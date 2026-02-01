@@ -1,0 +1,9 @@
+CREATE TABLE stocks (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    product_id BIGINT NOT NULL,
+    quantity INT NOT NULL DEFAULT 0,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_stock_product FOREIGN KEY (product_id) REFERENCES products(id),
+    CONSTRAINT uk_stock_product UNIQUE (product_id)
+);

@@ -1,0 +1,16 @@
+CREATE TABLE orders (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    seller_id BIGINT NOT NULL,
+    status VARCHAR(30) NOT NULL COMMENT 'PENDING, CONFIRMED, SHIPPING, DELIVERED, COMPLETED, CANCEL_REQUESTED, CANCELED',
+    total_price DECIMAL(10, 2) NOT NULL,
+    ordered_at DATETIME NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_order_user FOREIGN KEY (user_id) REFERENCES users(id),
+    CONSTRAINT fk_order_seller FOREIGN KEY (seller_id) REFERENCES sellers(id)
+);
+
+CREATE INDEX idx_orders_user ON orders(user_id);
+CREATE INDEX idx_orders_seller ON orders(seller_id);
+CREATE INDEX idx_orders_status ON orders(status);
