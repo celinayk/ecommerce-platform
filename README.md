@@ -1,6 +1,19 @@
 # 🛒 E-Commerce Platform
 
-  Spring Boot 기반 종합 온라인 쇼핑몰 플랫폼
+  Spring Boot 기반의 이커머스 플랫폼으로, 단순 CRUD 구현에서 시작해 고가용성 백엔드 시스템으로 진화하는 과정을 담은 프로젝트입니다.
+
+## 🚀 Project Journey: From v1 to v2
+
+### 🔹 v1. Fundamentals (2025.10 - 2025.11)
+**"비즈니스 로직의 이해와 데이터 접근 기초 확립"**
+* **핵심 기술**: Spring Boot 3.x, MyBatis, MySQL
+* **학습 성과**: SQL Mapper를 통한 DB 핸들링, 기초 CRUD API 설계 학습
+* **기록**: 기본적인 도메인 기능(회원, 상품, 주문, 환불)을 완성했습니다.
+
+### 🔹 v2. Technical Deep-Dive (2026.02 - Present)
+**"객체 지향적 설계와 고도화된 기술 도입"**
+* **핵심 기술**: Spring Data JPA, QueryDSL, Redis, Docker
+* **전환 배경**: MyBatis의 유지보수 생산성 한계를 극복하기 위해 JPA를 도입하고, 확장 가능한 아키텍처로 재설계했습니다.
 
   ## 📋 목차
   - [프로젝트 개요](#-프로젝트-개요)
