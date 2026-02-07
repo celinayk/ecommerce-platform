@@ -5,8 +5,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
+
 @Getter
-@Setter
 @NoArgsConstructor
 public class OrderRequest {
 
@@ -18,8 +19,11 @@ public class OrderRequest {
   @Positive(message = "상품 ID는 양수여야 합니다.")
   private Long productId;
 
+  @NotNull(message = "상품 가격은 필수입니다.")
+  private BigDecimal price;
+
   @NotNull(message = "주문 수량은 필수입니다.")
   @Min(value = 1, message = "주문 수량은 최소 1개 이상이어야 합니다.")
   @Max(value = 1000, message = "주문 수량은 최대 1000개까지 가능합니다.")
-  private Integer count;
+  private Integer quantity;
 }

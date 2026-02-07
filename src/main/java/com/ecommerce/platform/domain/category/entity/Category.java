@@ -1,27 +1,31 @@
 package com.ecommerce.platform.domain.category.entity;
 
 import com.ecommerce.platform.domain.common.BaseEntity;
-import com.ecommerce.platform.domain.product.entity.Product;
+import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-
+@Entity
+@Table(name = "categories")
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Category extends BaseEntity {
 
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
+
+  @Column(nullable = false, length = 100)
   private String name;
+
+  @Column(length = 500)
   private String description;
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "parent_id")
   private Category parent;
-  private List<Product> products = new ArrayList<>();
-  private List<Category> children = new ArrayList<>();
-  private LocalDateTime createdAt;
-  private LocalDateTime updatedAt;
 
   @Builder
   public Category(String name, String description, Category parent) {
@@ -30,7 +34,6 @@ public class Category extends BaseEntity {
     this.parent = parent;
   }
 
-  // 비즈니스 로직
   public void updateParent(Category parent) {
     this.parent = parent;
   }

@@ -1,18 +1,13 @@
 package com.ecommerce.platform.domain.cart.repository;
 
 import com.ecommerce.platform.domain.cart.entity.Cart;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
 
-public interface CartRepository {
-
-    Cart save(Cart cart);
-
-    Optional<Cart> findById(Long id);
+public interface CartRepository extends JpaRepository<Cart, Long> {
 
     Optional<Cart> findByUserId(Long userId);
-
-    void deleteById(Long id);
 
     void deleteByUserId(Long userId);
 }

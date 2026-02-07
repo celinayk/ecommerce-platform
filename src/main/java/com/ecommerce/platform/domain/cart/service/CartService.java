@@ -53,9 +53,8 @@ public class CartService {
                 .orElse(null);
 
         if (existingItem != null) {
-            // 이미 있으면 수량 증가
+            // 이미 있으면 수량 증가 (JPA dirty checking)
             existingItem.increaseQuantity(request.getQuantity());
-            cartItemRepository.updateQuantity(existingItem.getId(), existingItem.getQuantity());
             return CartItemResponse.from(existingItem);
         }
 
@@ -80,14 +79,13 @@ public class CartService {
         CartItem cartItem = cartItemRepository.findById(cartItemId)
                 .orElseThrow(() -> new CartException(ErrorCode.CART_ITEM_NOT_FOUND));
 
+        // JPA dirty checking으로 자동 업데이트
         if (request.getQuantity() != null) {
             cartItem.updateQuantity(request.getQuantity());
-            cartItemRepository.updateQuantity(cartItemId, request.getQuantity());
         }
 
         if (request.getIsSelected() != null) {
             cartItem.updateSelected(request.getIsSelected());
-            cartItemRepository.updateSelected(cartItemId, request.getIsSelected());
         }
 
         return CartItemResponse.from(cartItem);
