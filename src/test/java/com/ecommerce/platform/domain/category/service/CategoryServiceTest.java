@@ -11,6 +11,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -145,10 +148,10 @@ class CategoryServiceTest {
     categoryService.createCategory(category2);
 
     // when
-    List<Category> categories = categoryService.findAll();
+    Page<com.ecommerce.platform.domain.category.dto.CategoryResponse> categories = categoryService.findAll(PageRequest.of(0, 10));
 
     // then
-    assertThat(categories).hasSizeGreaterThanOrEqualTo(2);
+    assertThat(categories.getContent()).hasSizeGreaterThanOrEqualTo(2);
   }
 
   @Test

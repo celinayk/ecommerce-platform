@@ -17,13 +17,11 @@ import com.ecommerce.platform.domain.user.repository.UserRepository;
 import com.ecommerce.platform.global.common.response.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -44,22 +42,20 @@ public class OrderService {
     Product product = productRepository.findById(request.getProductId())
         .orElseThrow(() -> new ProductException(ErrorCode.PRODUCT_NOT_FOUND));
 
-    // 재고 감소 (도메인 로직)
-    product.decreaseStock(request.getCount());
-    productRepository.save(product);
 
     // OrderItem 생성
     OrderItem orderItem = OrderItem.builder()
         .product(product)
-        .price(product.getPrice())
-        .quantity(request.getCount())
+        .price(request.getPrice())
+        .quantity(request.getQuantity())
         .build();
 
     // 주문 생성
     Order order = Order.builder()
         .user(user)
         .status(OrderStatus.PENDING)
-        .totalAmount(orderItem.getSubtotal())
+        .totalPrice(orderItem.getSubtotal())
+        .orderedAt(LocalDateTime.now())
         .build();
 
     // 주문 저장
@@ -77,17 +73,8 @@ public class OrderService {
 
   // 주문 목록 조회 (페이징)
   public Page<OrderResponse> getAllOrders(Pageable pageable) {
-    int offset = (int) pageable.getOffset();
-    int limit = pageable.getPageSize();
-
-    List<Order> orders = orderRepository.findAll(offset, limit);
-    int total = orderRepository.count();
-
-    List<OrderResponse> content = orders.stream()
-        .map(OrderResponse::from)
-        .collect(Collectors.toList());
-
-    return new PageImpl<>(content, pageable, total);
+    return orderRepository.findAll(pageable)
+        .map(OrderResponse::from);
   }
 
   // 주문 상세 조회
@@ -103,20 +90,8 @@ public class OrderService {
     Order order = orderRepository.findById(orderId)
         .orElseThrow(() -> new OrderException(ErrorCode.ORDER_NOT_FOUND));
 
-    if (order.getStatus() == OrderStatus.CANCELED) {
-      throw new IllegalStateException("이미 취소된 주문입니다.");
-    }
+    order.cancel();
 
-    // 주문 상태 변경
-    orderRepository.updateStatus(orderId, OrderStatus.CANCELED);
-
-    // 재고 복구 (도메인 로직)
-    List<OrderItem> orderItems = orderItemRepository.findByOrderId(orderId);
-    for (OrderItem orderItem : orderItems) {
-      Product product = productRepository.findById(orderItem.getProduct().getId())
-          .orElseThrow(() -> new ProductException(ErrorCode.PRODUCT_NOT_FOUND));
-      product.increaseStock(orderItem.getQuantity());
-      productRepository.save(product);
-    }
+    // TODO: 재고 복구 로직은 Stock 서비스로 분리 필요
   }
 }

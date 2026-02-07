@@ -1,38 +1,46 @@
 package com.ecommerce.platform.domain.cart.entity;
 
+import com.ecommerce.platform.domain.common.BaseEntity;
 import com.ecommerce.platform.domain.product.entity.Product;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import jakarta.persistence.*;
+import lombok.*;
 
-import java.time.LocalDateTime;
+import java.math.BigDecimal;
 
+@Entity
 @Getter
-@NoArgsConstructor
-public class CartItem {
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder
+@Table(name = "cart_items", indexes = {
+    @Index(name = "idx_cart_items_cart", columnList = "cart_id")
+})
+public class CartItem extends BaseEntity {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cart_id", nullable = false)
     private Cart cart;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id", nullable = false)
     private Product product;
+
+    @Column(nullable = false)
     private Integer quantity;
+
+    @Column(name = "is_selected", nullable = false)
     private Boolean isSelected;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
 
-    @Builder
-    public CartItem(Cart cart, Product product, Integer quantity, Boolean isSelected) {
-        this.cart = cart;
-        this.product = product;
-        this.quantity = quantity != null ? quantity : 1;
-        this.isSelected = isSelected != null ? isSelected : true;
-    }
 
-    // 연관관계 편의 메서드
+
     public void setCart(Cart cart) {
         this.cart = cart;
     }
 
-    // 수량 변경
     public void updateQuantity(Integer quantity) {
         if (quantity <= 0) {
             throw new IllegalArgumentException("수량은 1개 이상이어야 합니다.");
@@ -40,18 +48,15 @@ public class CartItem {
         this.quantity = quantity;
     }
 
-    // 수량 증가
     public void increaseQuantity(int amount) {
         this.quantity += amount;
     }
 
-    // 선택 상태 변경
     public void updateSelected(Boolean isSelected) {
         this.isSelected = isSelected;
     }
 
-    // 소계 계산
-    public Long getSubtotal() {
-        return product.getPrice() * quantity;
+    public BigDecimal getSubtotal() {
+        return product.getPrice().multiply(BigDecimal.valueOf(quantity));
     }
 }

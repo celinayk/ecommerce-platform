@@ -7,18 +7,12 @@ import com.ecommerce.platform.domain.category.repository.CategoryRepository;
 import com.ecommerce.platform.global.common.response.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
-/**
- * CategoryService
- * Repository 인터페이스를 사용하므로 MyBatis -> JPA 전환 시 코드 변경 불필요
- */
 @Service
 @RequiredArgsConstructor
 public class CategoryService {
@@ -51,17 +45,8 @@ public class CategoryService {
 
   // 페이징 처리
   public Page<CategoryResponse> findAll(Pageable pageable) {
-    int offset = (int) pageable.getOffset();
-    int limit = pageable.getPageSize();
-
-    List<Category> categories = categoryRepository.findAll(offset, limit);
-    int total = categoryRepository.count();
-
-    List<CategoryResponse> content = categories.stream()
-        .map(CategoryResponse::from)
-        .collect(Collectors.toList());
-
-    return new PageImpl<>(content, pageable, total);
+    return categoryRepository.findAll(pageable)
+        .map(CategoryResponse::from);
   }
 
 

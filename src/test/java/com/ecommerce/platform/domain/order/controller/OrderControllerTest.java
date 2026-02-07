@@ -3,7 +3,6 @@ package com.ecommerce.platform.domain.order.controller;
 import com.ecommerce.platform.domain.order.dto.OrderRequest;
 import com.ecommerce.platform.domain.order.repository.OrderRepository;
 import com.ecommerce.platform.domain.product.entity.Product;
-import com.ecommerce.platform.domain.product.entity.ProductStatus;
 import com.ecommerce.platform.domain.product.repository.ProductRepository;
 import com.ecommerce.platform.domain.user.entity.User;
 import com.ecommerce.platform.domain.user.repository.UserRepository;
@@ -16,6 +15,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -52,10 +53,10 @@ class OrderControllerTest {
 
     // 테스트용 상품 생성
     testProduct = Product.builder()
+        .sellerId(1L)
         .name("테스트상품")
         .description("상품 설명")
-        .price(10000L)
-        .stock(100L)
+        .price(new BigDecimal("10000"))
         .build();
     productRepository.save(testProduct);
   }
@@ -66,7 +67,9 @@ class OrderControllerTest {
     OrderRequest request = new OrderRequest();
     request.setUserId(testUser.getId());
     request.setProductId(testProduct.getId());
-    request.setCount(2);
+    request.setSellerId(1L);
+    request.setPrice(new BigDecimal("10000"));
+    request.setQuantity(2);
 
     // when & then
     mockMvc.perform(post("/api/orders")
@@ -74,7 +77,7 @@ class OrderControllerTest {
             .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.userId").value(testUser.getId()))
-        .andExpect(jsonPath("$.totalAmount").value(20000));
+        .andExpect(jsonPath("$.totalPrice").value(20000));
   }
 
   @Test
@@ -84,7 +87,9 @@ class OrderControllerTest {
         {
           "userId": null,
           "productId": 1,
-          "count": 2
+          "sellerId": 1,
+          "price": 10000,
+          "quantity": 2
         }
         """;
 
@@ -103,7 +108,9 @@ class OrderControllerTest {
     OrderRequest request = new OrderRequest();
     request.setUserId(0L); // 0은 양수 아님
     request.setProductId(testProduct.getId());
-    request.setCount(2);
+    request.setSellerId(1L);
+    request.setPrice(new BigDecimal("10000"));
+    request.setQuantity(2);
 
     // when & then
     mockMvc.perform(post("/api/orders")
@@ -120,7 +127,9 @@ class OrderControllerTest {
     OrderRequest request = new OrderRequest();
     request.setUserId(-1L); // 음수
     request.setProductId(testProduct.getId());
-    request.setCount(2);
+    request.setSellerId(1L);
+    request.setPrice(new BigDecimal("10000"));
+    request.setQuantity(2);
 
     // when & then
     mockMvc.perform(post("/api/orders")
@@ -138,7 +147,9 @@ class OrderControllerTest {
         {
           "userId": 1,
           "productId": null,
-          "count": 2
+          "sellerId": 1,
+          "price": 10000,
+          "quantity": 2
         }
         """;
 
@@ -157,7 +168,9 @@ class OrderControllerTest {
     OrderRequest request = new OrderRequest();
     request.setUserId(testUser.getId());
     request.setProductId(0L); // 0은 양수 아님
-    request.setCount(2);
+    request.setSellerId(1L);
+    request.setPrice(new BigDecimal("10000"));
+    request.setQuantity(2);
 
     // when & then
     mockMvc.perform(post("/api/orders")
@@ -174,7 +187,9 @@ class OrderControllerTest {
     OrderRequest request = new OrderRequest();
     request.setUserId(testUser.getId());
     request.setProductId(-1L); // 음수
-    request.setCount(2);
+    request.setSellerId(1L);
+    request.setPrice(new BigDecimal("10000"));
+    request.setQuantity(2);
 
     // when & then
     mockMvc.perform(post("/api/orders")
@@ -186,13 +201,15 @@ class OrderControllerTest {
   }
 
   @Test
-  void 주문생성_count필수검증() throws Exception {
+  void 주문생성_quantity필수검증() throws Exception {
     // given
     String requestBody = """
         {
           "userId": 1,
           "productId": 1,
-          "count": null
+          "sellerId": 1,
+          "price": 10000,
+          "quantity": null
         }
         """;
 
@@ -202,16 +219,18 @@ class OrderControllerTest {
             .content(requestBody))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"))
-        .andExpect(jsonPath("$.errors.count").exists());
+        .andExpect(jsonPath("$.errors.quantity").exists());
   }
 
   @Test
-  void 주문생성_count최소값검증_0() throws Exception {
+  void 주문생성_quantity최소값검증_0() throws Exception {
     // given
     OrderRequest request = new OrderRequest();
     request.setUserId(testUser.getId());
     request.setProductId(testProduct.getId());
-    request.setCount(0); // 0은 최소값 미만
+    request.setSellerId(1L);
+    request.setPrice(new BigDecimal("10000"));
+    request.setQuantity(0); // 0은 최소값 미만
 
     // when & then
     mockMvc.perform(post("/api/orders")
@@ -219,16 +238,18 @@ class OrderControllerTest {
             .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"))
-        .andExpect(jsonPath("$.errors.count").exists());
+        .andExpect(jsonPath("$.errors.quantity").exists());
   }
 
   @Test
-  void 주문생성_count최소값검증_음수() throws Exception {
+  void 주문생성_quantity최소값검증_음수() throws Exception {
     // given
     OrderRequest request = new OrderRequest();
     request.setUserId(testUser.getId());
     request.setProductId(testProduct.getId());
-    request.setCount(-5); // 음수
+    request.setSellerId(1L);
+    request.setPrice(new BigDecimal("10000"));
+    request.setQuantity(-5); // 음수
 
     // when & then
     mockMvc.perform(post("/api/orders")
@@ -236,16 +257,18 @@ class OrderControllerTest {
             .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"))
-        .andExpect(jsonPath("$.errors.count").exists());
+        .andExpect(jsonPath("$.errors.quantity").exists());
   }
 
   @Test
-  void 주문생성_count최대값검증() throws Exception {
+  void 주문생성_quantity최대값검증() throws Exception {
     // given
     OrderRequest request = new OrderRequest();
     request.setUserId(testUser.getId());
     request.setProductId(testProduct.getId());
-    request.setCount(1001); // 1000 초과
+    request.setSellerId(1L);
+    request.setPrice(new BigDecimal("10000"));
+    request.setQuantity(1001); // 1000 초과
 
     // when & then
     mockMvc.perform(post("/api/orders")
@@ -253,6 +276,6 @@ class OrderControllerTest {
             .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"))
-        .andExpect(jsonPath("$.errors.count").exists());
+        .andExpect(jsonPath("$.errors.quantity").exists());
   }
 }

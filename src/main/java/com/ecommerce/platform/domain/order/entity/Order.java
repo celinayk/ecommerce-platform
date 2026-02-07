@@ -2,50 +2,66 @@ package com.ecommerce.platform.domain.order.entity;
 
 import com.ecommerce.platform.domain.common.BaseEntity;
 import com.ecommerce.platform.domain.user.entity.User;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import jakarta.persistence.*;
+import lombok.*;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+@Entity
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder
+@Table(name = "orders", indexes = {
+    @Index(name = "idx_orders_user", columnList = "user_id"),
+    @Index(name = "idx_orders_status", columnList = "status")
+})
 public class Order extends BaseEntity {
 
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "user_id", nullable = false)
   private User user;
-  private Long totalAmount;
+
+
+  @Column(name = "total_price", nullable = false, precision = 10, scale = 2)
+  private BigDecimal totalPrice;
+
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false, length = 30)
   private OrderStatus status;
+
+  @Column(name = "ordered_at", nullable = false)
+  private LocalDateTime orderedAt;
+
+  @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<OrderItem> orderItems = new ArrayList<>();
 
-  @Builder
-  public Order(User user, Long totalAmount, OrderStatus status) {
-    this.user = user;
-    this.totalAmount = totalAmount != null ? totalAmount : 0L;
-    this.status = status != null ? status : OrderStatus.PENDING;
-  }
 
-  // 연관관계 편의 메서드
   public void addOrderItem(OrderItem orderItem) {
     orderItems.add(orderItem);
     orderItem.setOrder(this);
-    calculateTotalAmount();  // 자동으로 총액 재계산
+    calculateTotalPrice();
   }
 
-  // 총 금액 계산
-  private void calculateTotalAmount() {
-    this.totalAmount = orderItems.stream()
+  private void calculateTotalPrice() {
+    this.totalPrice = orderItems.stream()
         .map(OrderItem::getSubtotal)
-        .reduce(0L, Long::sum);
+        .reduce(BigDecimal.ZERO, BigDecimal::add);
   }
 
-  // 생성 메서드
   public static Order createOrder(User user, List<OrderItem> orderItems) {
     Order order = Order.builder()
         .user(user)
-        .totalAmount(0L)
+        .totalPrice(BigDecimal.ZERO)
         .status(OrderStatus.PENDING)
+        .orderedAt(LocalDateTime.now())
         .build();
 
     for (OrderItem orderItem : orderItems) {
@@ -54,13 +70,11 @@ public class Order extends BaseEntity {
     return order;
   }
 
-  // 주문 취소
   public void cancel() {
-    if(this.status == OrderStatus.CANCELED) {
+    if (this.status == OrderStatus.CANCELED) {
       throw new IllegalStateException("이미 취소된 주문입니다.");
     }
     this.status = OrderStatus.CANCELED;
-    // 재고 복구
     for (OrderItem orderItem : orderItems) {
       orderItem.cancel();
     }

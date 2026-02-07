@@ -1,6 +1,5 @@
 package com.ecommerce.platform.domain.product.service;
 
-import com.ecommerce.platform.domain.category.entity.Category;
 import com.ecommerce.platform.domain.category.exception.CategoryException;
 import com.ecommerce.platform.domain.category.repository.CategoryRepository;
 import com.ecommerce.platform.domain.product.dto.ProductCreateRequest;
@@ -15,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,20 +28,18 @@ public class ProductService {
   // 상품 등록
   @Transactional
   public ProductResponse createProduct(ProductCreateRequest request) {
-    // 카테고리 조회
-    Category category = null;
-    if(request.getCategoryId() != null) {
-      category = categoryRepository.findById(request.getCategoryId())
+    // 카테고리 존재 확인
+    if (request.getCategoryId() != null) {
+      categoryRepository.findById(request.getCategoryId())
           .orElseThrow(() -> new CategoryException(ErrorCode.CATEGORY_NOT_FOUND));
     }
 
     // 상품 생성
     Product product = Product.builder()
-        .category(category)
+        .categoryId(request.getCategoryId())
         .name(request.getName())
         .description(request.getDescription())
         .price(request.getPrice())
-        .stock(request.getStock())
         .build();
 
     Product savedProduct = productRepository.save(product);
@@ -67,29 +65,28 @@ public class ProductService {
     List<Product> products;
 
     // 카테고리 기반 검색
-    if(request.getCategoryId() != null) {
-      Category category = categoryRepository.findById(request.getCategoryId())
+    if (request.getCategoryId() != null) {
+      categoryRepository.findById(request.getCategoryId())
           .orElseThrow(() -> new CategoryException(ErrorCode.CATEGORY_NOT_FOUND));
 
-      products = productRepository.findByCategoryAndNameContainingAndPriceBetween(
-          category,
+      products = productRepository.findByCategoryIdAndNameContainingAndPriceBetween(
+          request.getCategoryId(),
           request.getKeyword() != null ? request.getKeyword() : "",
-          request.getMinPrice() != null ? request.getMinPrice() : 0L,
-          request.getMaxPrice() != null ? request.getMaxPrice() : Long.MAX_VALUE
+          request.getMinPrice() != null ? request.getMinPrice() : BigDecimal.ZERO,
+          request.getMaxPrice() != null ? request.getMaxPrice() : new BigDecimal("999999999")
       );
     }
 
     // 키워드만 검색
-    else if(request.getKeyword() != null && !request.getKeyword().isEmpty()) {
+    else if (request.getKeyword() != null && !request.getKeyword().isEmpty()) {
       products = productRepository.findByNameContaining(request.getKeyword());
     }
 
     // 가격 범위만 검색
-    else if(request.getMinPrice() != null || request.getMaxPrice() != null) {
-      products = productRepository.findByPriceBetween(
-          request.getMinPrice() != null ? request.getMinPrice() : 0L,
-          request.getMaxPrice() != null ? request.getMaxPrice() : Long.MAX_VALUE
-      );
+    else if (request.getMinPrice() != null || request.getMaxPrice() != null) {
+      BigDecimal minPrice = request.getMinPrice() != null ? request.getMinPrice() : BigDecimal.ZERO;
+      BigDecimal maxPrice = request.getMaxPrice() != null ? request.getMaxPrice() : new BigDecimal("999999999");
+      products = productRepository.findByPriceBetween(minPrice, maxPrice);
     }
 
     // 조건 없으면 전체 조회
@@ -109,19 +106,19 @@ public class ProductService {
         .orElseThrow(() -> new ProductException(ErrorCode.PRODUCT_NOT_FOUND));
 
     // 카테고리 변경
-    if(request.getCategoryId() != null) {
-      Category category = categoryRepository.findById(request.getCategoryId())
+    if (request.getCategoryId() != null) {
+      categoryRepository.findById(request.getCategoryId())
           .orElseThrow(() -> new CategoryException(ErrorCode.CATEGORY_NOT_FOUND));
-      product.updateCategory(category);
-
+      product.updateCategory(request.getCategoryId());
     }
+
     product.updateProductInfo(
         request.getName(),
         request.getDescription(),
-        request.getPrice(),
-        request.getStock()
+        request.getPrice()
     );
 
+    productRepository.save(product);
     return ProductResponse.from(product);
   }
 

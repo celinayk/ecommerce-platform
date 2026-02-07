@@ -3,6 +3,7 @@ package com.ecommerce.platform.domain.product.controller;
 import com.ecommerce.platform.domain.category.entity.Category;
 import com.ecommerce.platform.domain.category.repository.CategoryRepository;
 import com.ecommerce.platform.domain.product.dto.ProductCreateRequest;
+import com.ecommerce.platform.domain.product.dto.ProductUpdateRequest;
 import com.ecommerce.platform.domain.product.repository.ProductRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,6 +14,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -49,10 +52,10 @@ class ProductControllerTest {
   void 상품등록_성공() throws Exception {
     // given
     ProductCreateRequest request = ProductCreateRequest.builder()
+        .sellerId(1L)
         .name("테스트상품")
         .description("상품 설명입니다")
-        .price(10000L)
-        .stock(100L)
+        .price(new BigDecimal("10000"))
         .categoryId(1L)
         .build();
 
@@ -69,10 +72,10 @@ class ProductControllerTest {
   void 상품등록_상품명필수검증() throws Exception {
     // given
     ProductCreateRequest request = ProductCreateRequest.builder()
+        .sellerId(1L)
         .name("") // 빈 상품명
         .description("상품 설명입니다")
-        .price(10000L)
-        .stock(100L)
+        .price(new BigDecimal("10000"))
         .categoryId(1L)
         .build();
 
@@ -89,10 +92,10 @@ class ProductControllerTest {
   void 상품등록_상품명길이검증() throws Exception {
     // given
     ProductCreateRequest request = ProductCreateRequest.builder()
+        .sellerId(1L)
         .name("a".repeat(101)) // 101자 (최대 100자)
         .description("상품 설명입니다")
-        .price(10000L)
-        .stock(100L)
+        .price(new BigDecimal("10000"))
         .categoryId(1L)
         .build();
 
@@ -106,33 +109,13 @@ class ProductControllerTest {
   }
 
   @Test
-  void 상품등록_설명필수검증() throws Exception {
-    // given
-    ProductCreateRequest request = ProductCreateRequest.builder()
-        .name("테스트상품")
-        .description("") // 빈 설명
-        .price(10000L)
-        .stock(100L)
-        .categoryId(1L)
-        .build();
-
-    // when & then
-    mockMvc.perform(post("/api/products")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(request)))
-        .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"))
-        .andExpect(jsonPath("$.errors.description").exists());
-  }
-
-  @Test
   void 상품등록_설명길이검증() throws Exception {
     // given
     ProductCreateRequest request = ProductCreateRequest.builder()
+        .sellerId(1L)
         .name("테스트상품")
         .description("a".repeat(501)) // 501자 (최대 500자)
-        .price(10000L)
-        .stock(100L)
+        .price(new BigDecimal("10000"))
         .categoryId(1L)
         .build();
 
@@ -150,10 +133,10 @@ class ProductControllerTest {
     // given
     String requestBody = """
         {
+          "sellerId": 1,
           "name": "테스트상품",
           "description": "상품 설명입니다",
-          "price": null,
-          "stockQuantity": 100
+          "price": null
         }
         """;
 
@@ -164,97 +147,15 @@ class ProductControllerTest {
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"))
         .andExpect(jsonPath("$.errors.price").exists());
-  }
-
-  @Test
-  void 상품등록_가격최소값검증() throws Exception {
-    // given
-    ProductCreateRequest request = ProductCreateRequest.builder()
-        .name("테스트상품")
-        .description("상품 설명입니다")
-        .price((long) -1000) // 음수
-        .stock(100L)
-        .categoryId(1L)
-        .build();
-
-    // when & then
-    mockMvc.perform(post("/api/products")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(request)))
-        .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"))
-        .andExpect(jsonPath("$.errors.price").exists());
-  }
-
-  @Test
-  void 상품등록_가격최대값검증() throws Exception {
-    // given
-    ProductCreateRequest request = ProductCreateRequest.builder()
-        .name("테스트상품")
-        .description("상품 설명입니다")
-        .price(100000001L) // 1억원 초과
-        .stock(100L)
-        .categoryId(1L)
-        .build();
-
-    // when & then
-    mockMvc.perform(post("/api/products")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(request)))
-        .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"))
-        .andExpect(jsonPath("$.errors.price").exists());
-  }
-
-  @Test
-  void 상품등록_재고필수검증() throws Exception {
-    // given
-    String requestBody = """
-        {
-          "name": "테스트상품",
-          "description": "상품 설명입니다",
-          "price": 10000,
-          "stock": null
-        }
-        """;
-
-    // when & then
-    mockMvc.perform(post("/api/products")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(requestBody))
-        .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"))
-        .andExpect(jsonPath("$.errors.stock").exists());
-  }
-
-  @Test
-  void 상품등록_재고최소값검증() throws Exception {
-    // given
-    ProductCreateRequest request = ProductCreateRequest.builder()
-        .name("테스트상품")
-        .description("상품 설명입니다")
-        .price(10000L)
-        .stock((long) -10) // 음수
-        .categoryId(1L)
-        .build();
-
-    // when & then
-    mockMvc.perform(post("/api/products")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(request)))
-        .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"))
-        .andExpect(jsonPath("$.errors.stock").exists());
   }
 
   @Test
   void 상품수정_검증() throws Exception {
     // given
-    ProductCreateRequest request = ProductCreateRequest.builder()
+    ProductUpdateRequest request = ProductUpdateRequest.builder()
         .name("") // 빈 상품명
         .description("수정된 설명")
-        .price((long) -1000) // 음수 가격
-        .stock(50L)
+        .price(new BigDecimal("-1000")) // 음수 가격
         .categoryId(1L)
         .build();
 

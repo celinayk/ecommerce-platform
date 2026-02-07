@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -65,8 +66,7 @@ class RefundServiceTest {
     // 테스트용 상품 생성
     testProduct = Product.builder()
         .name("테스트상품")
-        .price(10000L)
-        .stock(100L)
+        .price(new BigDecimal("10000"))
         .build();
     testProduct = productRepository.save(testProduct);
 
@@ -74,7 +74,7 @@ class RefundServiceTest {
     testOrder = Order.builder()
         .user(testUser)
         .status(OrderStatus.COMPLETED)
-        .totalAmount(10000L)
+        .totalPrice(new BigDecimal("10000"))
         .build();
     testOrder = orderRepository.save(testOrder);
 
@@ -83,7 +83,7 @@ class RefundServiceTest {
         .order(testOrder)
         .product(testProduct)
         .quantity(1)
-        .price(10000L)
+        .price(new BigDecimal("10000"))
         .build();
     orderItemRepository.save(orderItem);
   }
@@ -166,7 +166,7 @@ class RefundServiceTest {
     Order pendingOrder = Order.builder()
         .user(testUser)
         .status(OrderStatus.PENDING)
-        .totalAmount(10000L)
+        .totalPrice(new BigDecimal("10000"))
         .build();
     pendingOrder = orderRepository.save(pendingOrder);
 
@@ -283,17 +283,12 @@ class RefundServiceTest {
         .build();
     RefundResponse created = refundService.createRefund(request);
 
-    Long originalStock = testProduct.getStock();
-
     // when
     RefundResponse approved = refundService.approveRefund(created.getId());
 
     // then
     assertThat(approved.getStatus()).isEqualTo(RefundStatus.APPROVED);
-
-    // 재고 복구 확인
-    Product updatedProduct = productRepository.findById(testProduct.getId()).orElseThrow();
-    assertThat(updatedProduct.getStock()).isEqualTo(originalStock + 1);
+    // TODO: 재고 복구 테스트는 Stock 도메인 구현 후 추가 필요
   }
 
   @Test

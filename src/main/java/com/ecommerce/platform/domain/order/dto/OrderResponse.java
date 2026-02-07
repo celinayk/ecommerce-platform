@@ -6,6 +6,7 @@ import com.ecommerce.platform.domain.order.entity.OrderStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -17,8 +18,9 @@ public class OrderResponse {
   private Long id;
   private Long userId;
   private String userName;
-  private Long totalAmount;
+  private BigDecimal totalPrice;
   private OrderStatus status;
+  private LocalDateTime orderedAt;
   private List<OrderItemInfo> orderItems;
   private LocalDateTime createdAt;
 
@@ -27,9 +29,9 @@ public class OrderResponse {
   public static class OrderItemInfo {
     private Long productId;
     private String productName;
-    private Long price;
+    private BigDecimal price;
     private Integer quantity;
-    private Long subtotal;
+    private BigDecimal subtotal;
 
     public static OrderItemInfo from(OrderItem orderItem) {
       return new OrderItemInfo(
@@ -47,8 +49,9 @@ public class OrderResponse {
         order.getId(),
         order.getUser().getId(),
         order.getUser().getName(),
-        order.getTotalAmount(),
+        order.getTotalPrice(),
         order.getStatus(),
+        order.getOrderedAt(),
         order.getOrderItems().stream()
             .map(OrderItemInfo::from)
             .collect(Collectors.toList()),

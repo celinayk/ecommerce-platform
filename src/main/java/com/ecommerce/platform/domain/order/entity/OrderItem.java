@@ -1,49 +1,57 @@
 package com.ecommerce.platform.domain.order.entity;
 
+import com.ecommerce.platform.domain.common.BaseEntity;
 import com.ecommerce.platform.domain.product.entity.Product;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import jakarta.persistence.*;
+import lombok.*;
 
+import java.math.BigDecimal;
+
+@Entity
+@Table(name = "order_items", indexes = {
+    @Index(name = "idx_order_items_order", columnList = "order_id")
+})
 @Getter
-@NoArgsConstructor
-public class OrderItem {
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder
+public class OrderItem extends BaseEntity {
 
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
-  private Order order;
-  private Product product;
-  private Long price;
-  private Integer quantity;
-  private Long subtotal;
 
-  @Builder
-  public OrderItem(Order order, Product product, Long price, Integer quantity) {
-    this.order = order;
-    this.product = product;
-    this.price = price;
-    this.quantity = quantity;
-    this.subtotal = price * quantity;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "order_id", nullable = false)
+  private Order order;
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "product_id", nullable = false)
+  private Product product;
+
+  @Column(nullable = false, precision = 10, scale = 2)
+  private BigDecimal price;
+
+  @Column(nullable = false)
+  private Integer quantity;
+
+  public BigDecimal getSubtotal() {
+    return price.multiply(BigDecimal.valueOf(quantity));
   }
 
-  // 생성 메서드
-  public static OrderItem createOrderItem(Product product, int quantity) {
-    // 재고 감소
-    product.decreaseStock(quantity);
-
+  public static OrderItem createOrderItem(Product product, BigDecimal price, int quantity) {
     return OrderItem.builder()
         .product(product)
         .quantity(quantity)
-        .price(product.getPrice())
+        .price(price)
         .build();
   }
 
-  // 연관관계 편의 메서드
   public void setOrder(Order order) {
     this.order = order;
   }
 
-  // 주문 취소
   public void cancel() {
-    getProduct().increaseStock(quantity);
+    // TODO: 재고 복구 로직은 Stock 도메인 구현 후 추가 필요
   }
 }

@@ -6,7 +6,6 @@ import com.ecommerce.platform.domain.order.entity.Order;
 import com.ecommerce.platform.domain.order.entity.OrderStatus;
 import com.ecommerce.platform.domain.order.repository.OrderRepository;
 import com.ecommerce.platform.domain.product.entity.Product;
-import com.ecommerce.platform.domain.product.entity.ProductStatus;
 import com.ecommerce.platform.domain.product.repository.ProductRepository;
 import com.ecommerce.platform.domain.user.entity.User;
 import com.ecommerce.platform.domain.user.repository.UserRepository;
@@ -19,6 +18,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -41,12 +42,14 @@ class OrderServiceTest {
   void 주문생성() {
     // given
     User user = createUser();
-    Product product = createProduct("테스트상품", 10000, 10);
+    Product product = createProduct("테스트상품", new BigDecimal("10000"));
 
     OrderRequest request = new OrderRequest();
     request.setUserId(user.getId());
     request.setProductId(product.getId());
-    request.setCount(2);
+    request.setSellerId(1L);
+    request.setPrice(new BigDecimal("10000"));
+    request.setQuantity(2);
 
     // when
     OrderResponse response = orderService.createOrder(request);
@@ -54,24 +57,22 @@ class OrderServiceTest {
     // then
     assertThat(response.getStatus()).isEqualTo(OrderStatus.PENDING);
     assertThat(response.getOrderItems()).hasSize(1);
-    assertThat(response.getTotalAmount()).isEqualTo(20000L);
-
-    // 재고 감소 확인 - DB에서 다시 조회
-    Product updatedProduct = productRepository.findById(product.getId()).orElseThrow();
-    assertThat(updatedProduct.getStock()).isEqualTo(8L);
+    assertThat(response.getTotalPrice()).isEqualByComparingTo(new BigDecimal("20000"));
   }
 
   @Test
   void 주문목록조회() {
     // given
     User user = createUser();
-    Product product = createProduct("테스트상품", 10000, 10);
+    Product product = createProduct("테스트상품", new BigDecimal("10000"));
 
     for (int i = 0; i < 5; i++) {
       OrderRequest request = new OrderRequest();
       request.setUserId(user.getId());
       request.setProductId(product.getId());
-      request.setCount(1);
+      request.setSellerId(1L);
+      request.setPrice(new BigDecimal("10000"));
+      request.setQuantity(1);
       orderService.createOrder(request);
     }
 
@@ -88,12 +89,14 @@ class OrderServiceTest {
   void 주문상세조회() {
     // given
     User user = createUser();
-    Product product = createProduct("테스트상품", 10000, 10);
+    Product product = createProduct("테스트상품", new BigDecimal("10000"));
 
     OrderRequest request = new OrderRequest();
     request.setUserId(user.getId());
     request.setProductId(product.getId());
-    request.setCount(2);
+    request.setSellerId(1L);
+    request.setPrice(new BigDecimal("10000"));
+    request.setQuantity(2);
     OrderResponse createdOrder = orderService.createOrder(request);
 
     // when
@@ -109,12 +112,14 @@ class OrderServiceTest {
   void 주문취소() {
     // given
     User user = createUser();
-    Product product = createProduct("테스트상품", 10000, 10);
+    Product product = createProduct("테스트상품", new BigDecimal("10000"));
 
     OrderRequest request = new OrderRequest();
     request.setUserId(user.getId());
     request.setProductId(product.getId());
-    request.setCount(2);
+    request.setSellerId(1L);
+    request.setPrice(new BigDecimal("10000"));
+    request.setQuantity(2);
     OrderResponse createdOrder = orderService.createOrder(request);
 
     // when
@@ -123,22 +128,21 @@ class OrderServiceTest {
     // then
     OrderResponse canceledOrder = orderService.getOrderById(createdOrder.getId());
     assertThat(canceledOrder.getStatus()).isEqualTo(OrderStatus.CANCELED);
-
-    // 재고 복구 확인 - DB에서 다시 조회
-    Product updatedProduct = productRepository.findById(product.getId()).orElseThrow();
-    assertThat(updatedProduct.getStock()).isEqualTo(10L);
+    // TODO: 재고 복구 테스트는 Stock 도메인 구현 후 추가 필요
   }
 
   @Test
   void 주문취소_중복취소예외() {
     // given
     User user = createUser();
-    Product product = createProduct("테스트상품", 10000, 10);
+    Product product = createProduct("테스트상품", new BigDecimal("10000"));
 
     OrderRequest request = new OrderRequest();
     request.setUserId(user.getId());
     request.setProductId(product.getId());
-    request.setCount(2);
+    request.setSellerId(1L);
+    request.setPrice(new BigDecimal("10000"));
+    request.setQuantity(2);
     OrderResponse createdOrder = orderService.createOrder(request);
 
     orderService.cancelOrder(createdOrder.getId());
@@ -147,22 +151,6 @@ class OrderServiceTest {
     assertThatThrownBy(() -> orderService.cancelOrder(createdOrder.getId()))
         .isInstanceOf(IllegalStateException.class)
         .hasMessage("이미 취소된 주문입니다.");
-  }
-
-  @Test
-  void 재고수량초과() {
-    // given
-    User user = createUser();
-    Product product = createProduct("테스트상품", 10000, 10);
-
-    OrderRequest request = new OrderRequest();
-    request.setUserId(user.getId());
-    request.setProductId(product.getId());
-    request.setCount(11); // 재고보다 많은 수량
-
-    // when & then
-    assertThatThrownBy(() -> orderService.createOrder(request))
-        .isInstanceOf(CustomException.class);
   }
 
   @Test
@@ -182,11 +170,11 @@ class OrderServiceTest {
     return user;
   }
 
-  private Product createProduct(String name, Integer price, int stockQuantity) {
+  private Product createProduct(String name, BigDecimal price) {
     Product product = Product.builder()
+        .sellerId(1L)
         .name(name)
-        .price(price.longValue())
-        .stock((long) stockQuantity)
+        .price(price)
         .build();
     productRepository.save(product);
     return product;

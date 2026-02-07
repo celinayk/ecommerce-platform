@@ -1,45 +1,46 @@
 package com.ecommerce.platform.domain.cart.entity;
 
+import com.ecommerce.platform.domain.common.BaseEntity;
 import com.ecommerce.platform.domain.user.entity.User;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import jakarta.persistence.*;
+import lombok.*;
 
-import java.time.LocalDateTime;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+@Entity
 @Getter
-@NoArgsConstructor
-public class Cart {
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder
+@Table(name = "carts")
+public class Cart extends BaseEntity {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;
+
+    @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CartItem> cartItems = new ArrayList<>();
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
 
-    @Builder
-    public Cart(User user) {
-        this.user = user;
-    }
-
-    // 장바구니 총 금액 계산
-    public Long getTotalPrice() {
+    public BigDecimal getTotalPrice() {
         return cartItems.stream()
                 .filter(CartItem::getIsSelected)
-                .mapToLong(item -> item.getProduct().getPrice() * item.getQuantity())
-                .sum();
+                .map(CartItem::getSubtotal)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
-    // 선택된 상품 수
     public int getSelectedItemCount() {
         return (int) cartItems.stream()
                 .filter(CartItem::getIsSelected)
                 .count();
     }
 
-    // 전체 상품 수
     public int getTotalItemCount() {
         return cartItems.size();
     }
