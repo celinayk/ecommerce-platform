@@ -6,7 +6,6 @@ import com.ecommerce.platform.domain.product.dto.ProductCreateRequest;
 import com.ecommerce.platform.domain.product.dto.ProductResponse;
 import com.ecommerce.platform.domain.product.dto.ProductUpdateRequest;
 import com.ecommerce.platform.domain.product.entity.Product;
-import com.ecommerce.platform.domain.product.entity.ProductStatus;
 import com.ecommerce.platform.domain.product.repository.ProductRepository;
 import com.ecommerce.platform.global.common.exception.CustomException;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -46,10 +46,10 @@ class ProductServiceTest {
   void 상품등록() {
     // given
     ProductCreateRequest request = ProductCreateRequest.builder()
+        .sellerId(1L)
         .name("테스트 상품")
         .description("테스트 상품 설명")
-        .price(10000L)
-        .stock(100L)
+        .price(new BigDecimal("10000"))
         .categoryId(1L)
         .build();
 
@@ -58,8 +58,7 @@ class ProductServiceTest {
 
     // then
     assertThat(response.getName()).isEqualTo("테스트 상품");
-    assertThat(response.getPrice()).isEqualTo(10000L);
-    assertThat(response.getStock()).isEqualTo(100L);
+    assertThat(response.getPrice()).isEqualByComparingTo(new BigDecimal("10000"));
   }
 
   @Test
@@ -67,9 +66,9 @@ class ProductServiceTest {
     // given
     for (int i = 1; i <= 15; i++) {
       Product product = Product.builder()
+          .sellerId(1L)
           .name("상품" + i)
-          .price((long) (1000 * i))
-          .stock(10L)
+          .price(new BigDecimal(1000 * i))
           .build();
       productRepository.save(product);
     }
@@ -85,9 +84,9 @@ class ProductServiceTest {
   void id로상품조회() {
     // given
     Product product = Product.builder()
+        .sellerId(1L)
         .name("조회 테스트 상품")
-        .price(5000L)
-        .stock(50L)
+        .price(new BigDecimal("5000"))
         .build();
     Product savedProduct = productRepository.save(product);
 
@@ -110,17 +109,16 @@ class ProductServiceTest {
   void 상품수정() {
     // given
     Product product = Product.builder()
+        .sellerId(1L)
         .name("수정 전 상품")
-        .price(5000L)
-        .stock(50L)
+        .price(new BigDecimal("5000"))
         .build();
     Product savedProduct = productRepository.save(product);
 
     ProductUpdateRequest request = ProductUpdateRequest.builder()
         .name("수정 후 상품")
         .description("수정된 설명")
-        .price(7000L)
-        .stock(70L)
+        .price(new BigDecimal("7000"))
         .categoryId(1L)
         .build();
 
@@ -130,17 +128,16 @@ class ProductServiceTest {
     // then
     assertThat(response.getName()).isEqualTo("수정 후 상품");
     assertThat(response.getDescription()).isEqualTo("수정된 설명");
-    assertThat(response.getPrice()).isEqualTo(7000L);
-    assertThat(response.getStock()).isEqualTo(70L);
+    assertThat(response.getPrice()).isEqualByComparingTo(new BigDecimal("7000"));
   }
 
   @Test
   void 상품삭제() {
     // given
     Product product = Product.builder()
+        .sellerId(1L)
         .name("삭제할 상품")
-        .price(3000L)
-        .stock(30L)
+        .price(new BigDecimal("3000"))
         .build();
     Product savedProduct = productRepository.save(product);
     Long productId = savedProduct.getId();

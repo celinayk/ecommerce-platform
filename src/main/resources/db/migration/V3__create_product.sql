@@ -1,10 +1,10 @@
 CREATE TABLE products (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    seller_id BIGINT NOT NULL,
     name VARCHAR(200) NOT NULL,
     description TEXT,
     price DECIMAL(10, 2) NOT NULL,
+    category_id BIGINT,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    CONSTRAINT fk_product_seller FOREIGN KEY (seller_id) REFERENCES sellers(id)
+    CONSTRAINT fk_product_category FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL
 );

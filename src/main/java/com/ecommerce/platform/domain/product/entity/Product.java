@@ -1,68 +1,48 @@
 package com.ecommerce.platform.domain.product.entity;
 
-import com.ecommerce.platform.domain.category.entity.Category;
 import com.ecommerce.platform.domain.common.BaseEntity;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import jakarta.persistence.*;
+import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+@Entity
+@Table(name = "products")
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder
 public class Product extends BaseEntity {
 
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
+
+  @Column(name = "category_id")
+  private Long categoryId;
+
+  @Column(nullable = false, length = 200)
   private String name;
+
+  @Column(columnDefinition = "TEXT")
   private String description;
-  private Long price;
-  private Long stock;
-  private Category category;
+
+  @Column(nullable = false, precision = 10, scale = 2)
+  private BigDecimal price;
+
+  @CreationTimestamp
+  @Column(name = "created_at", nullable = false, updatable = false)
   private LocalDateTime createdAt;
+
+  @UpdateTimestamp
+  @Column(name = "updated_at", nullable = false)
   private LocalDateTime updatedAt;
-  private ProductStatus status = ProductStatus.AVAILABLE;
 
-  @Builder
-  public Product(
-      Category category,
-      String name,
-      String description,
-      Long price,
-      Long stock
-  ) {
-    this.category = category;
-    this.name = name;
-    this.description = description;
-    this.price = price;
-    this.stock = stock;
-  }
 
-  public void updateCategory(Category category) {
-    this.category = category;
-  }
-
-  // 재고 감소
-  public void decreaseStock(int quantity) {
-    if(this.stock < quantity) {
-      throw new IllegalArgumentException("재고가 부족합니다.");
-    }
-    this.stock -= quantity;
-    if(this.stock == 0) {
-      this.status = ProductStatus.SOLD_OUT;
-    }
-  }
-
-  // 재고 증가
-  public void increaseStock(int quantity) {
-    this.stock += quantity;
-    if(this.stock > 0 && this.status == ProductStatus.SOLD_OUT) {
-      this.status = ProductStatus.AVAILABLE;
-    }
-  }
-
-  // 상품 정보 수정
-  public void updateProductInfo(String name, String description, Long price, Long stock) {
+  public void updateProductInfo(String name, String description, BigDecimal price) {
     if (name != null) {
       this.name = name;
     }
@@ -72,15 +52,9 @@ public class Product extends BaseEntity {
     if (price != null) {
       this.price = price;
     }
-    if (stock != null) {
-      this.stock = stock;
-      // 재고에 따른 상태 업데이트
-      if (stock == 0) {
-        this.status = ProductStatus.SOLD_OUT;
-      } else if (this.status == ProductStatus.SOLD_OUT) {
-        this.status = ProductStatus.AVAILABLE;
-      }
-    }
   }
 
+  public void updateCategory(Long categoryId) {
+    this.categoryId = categoryId;
+  }
 }

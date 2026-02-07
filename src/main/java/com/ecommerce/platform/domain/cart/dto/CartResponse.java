@@ -5,6 +5,7 @@ import com.ecommerce.platform.domain.cart.entity.CartItem;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -17,17 +18,17 @@ public class CartResponse {
     private List<CartItemResponse> items;
     private int totalItemCount;
     private int selectedItemCount;
-    private Long totalPrice;
+    private BigDecimal totalPrice;
 
     public static CartResponse from(Cart cart, List<CartItem> cartItems) {
         List<CartItemResponse> itemResponses = cartItems.stream()
                 .map(CartItemResponse::from)
                 .collect(Collectors.toList());
 
-        long totalPrice = cartItems.stream()
+        BigDecimal totalPrice = cartItems.stream()
                 .filter(CartItem::getIsSelected)
-                .mapToLong(item -> item.getProduct().getPrice() * item.getQuantity())
-                .sum();
+                .map(CartItem::getSubtotal)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         int selectedCount = (int) cartItems.stream()
                 .filter(CartItem::getIsSelected)
