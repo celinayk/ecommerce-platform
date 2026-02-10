@@ -1,5 +1,7 @@
 package com.ecommerce.platform.global.common.response;
 
+import org.springframework.http.HttpStatus;
+
 public enum ErrorCode {
   // 공통 (0xxx)
   SUCCESS(200, 0, "요청이 성공했습니다."),
@@ -38,7 +40,11 @@ public enum ErrorCode {
   // 장바구니 (6xxx)
   CART_NOT_FOUND(404, 6001, "장바구니가 존재하지 않습니다."),
   CART_ITEM_NOT_FOUND(404, 6002, "장바구니 상품이 존재하지 않습니다."),
-  CART_ITEM_ALREADY_EXISTS(400, 6003, "이미 장바구니에 있는 상품입니다.");
+  CART_ITEM_ALREADY_EXISTS(400, 6003, "이미 장바구니에 있는 상품입니다."),
+
+  INSUFFICIENT_STOCK(404, 7001, "재고가 부족합니다."),
+  STOCK_NOT_FOUND(404, 7002, "재고 정보를 찾을 수 없습니다.");
+
 
   private final int httpStatus;
   private final int code;
