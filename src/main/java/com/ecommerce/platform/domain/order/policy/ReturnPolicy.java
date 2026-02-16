@@ -19,7 +19,12 @@ public class ReturnPolicy {
       );
     }
 
-    // 2. 시간 확인: 배송완료 후 7일 이내
+    // 2. 배송완료 시각 존재 여부 확인
+    if (order.getDeliveredAt() == null) {
+      throw new IllegalStateException("배송완료 시각이 기록되지 않아 반품할 수 없습니다.");
+    }
+
+    // 3. 시간 확인: 배송완료 후 7일 이내
     LocalDateTime deadline = order.getDeliveredAt().plusDays(RETURN_DEADLINE_DAYS);
     if (LocalDateTime.now().isAfter(deadline)) {
       throw new IllegalStateException(
