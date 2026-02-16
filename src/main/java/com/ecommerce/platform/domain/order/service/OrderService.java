@@ -1,11 +1,16 @@
 package com.ecommerce.platform.domain.order.service;
 
+import com.ecommerce.platform.domain.order.dto.CancelRequest;
 import com.ecommerce.platform.domain.order.dto.OrderRequest;
 import com.ecommerce.platform.domain.order.dto.OrderResponse;
+import com.ecommerce.platform.domain.order.dto.ReturnRequest;
 import com.ecommerce.platform.domain.order.entity.Order;
 import com.ecommerce.platform.domain.order.entity.OrderItem;
 import com.ecommerce.platform.domain.order.entity.OrderStatus;
 import com.ecommerce.platform.domain.order.exception.OrderException;
+import com.ecommerce.platform.domain.order.policy.CancelPolicy;
+import com.ecommerce.platform.domain.order.policy.OrderTransitionPolicy;
+import com.ecommerce.platform.domain.order.policy.ReturnPolicy;
 import com.ecommerce.platform.domain.order.repository.OrderItemRepository;
 import com.ecommerce.platform.domain.order.repository.OrderRepository;
 import com.ecommerce.platform.domain.product.entity.Product;
@@ -21,7 +26,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
+
+import static com.ecommerce.platform.domain.order.entity.OrderStatus.CANCEL_REQUESTED;
+import static com.ecommerce.platform.domain.order.entity.OrderStatus.RETURN_REQUESTED;
+import static com.ecommerce.platform.global.common.response.ErrorCode.ORDER_NOT_FOUND;
 
 @Service
 @RequiredArgsConstructor
@@ -31,6 +41,9 @@ public class OrderService {
   private final OrderItemRepository orderItemRepository;
   private final ProductRepository productRepository;
   private final UserRepository userRepository;
+  private final OrderTransitionPolicy transitionPolicy;
+  private final CancelPolicy cancelPolicy;
+  private final ReturnPolicy returnPolicy;
 
   // 주문 생성
   @Transactional
@@ -50,48 +63,63 @@ public class OrderService {
         .quantity(request.getQuantity())
         .build();
 
-    // 주문 생성
+    // 주문 생성 + OrderItem 연결 (cascade로 함께 저장됨)
     Order order = Order.builder()
         .user(user)
         .status(OrderStatus.PENDING)
-        .totalPrice(orderItem.getSubtotal())
+        .totalPrice(BigDecimal.ZERO)
         .orderedAt(LocalDateTime.now())
         .build();
 
-    // 주문 저장
+    order.addOrderItem(orderItem);
     orderRepository.save(order);
 
-    // OrderItem에 orderId 설정 후 저장
-    orderItem.setOrder(order);
-    orderItemRepository.save(orderItem);
-
-    // 저장된 주문 조회 (orderItems 포함)
-    Order savedOrder = orderRepository.findById(order.getId())
-        .orElseThrow(() -> new OrderException(ErrorCode.ORDER_NOT_FOUND));
-    return OrderResponse.from(savedOrder);
+    return OrderResponse.from(order);
   }
 
   // 주문 목록 조회 (페이징)
+  @Transactional(readOnly = true)
   public Page<OrderResponse> getAllOrders(Pageable pageable) {
     return orderRepository.findAll(pageable)
         .map(OrderResponse::from);
   }
 
+  // 특정 사용자 주문 목록 조회
+  @Transactional(readOnly = true)
+  public Page<OrderResponse> getOrdersByUserId(Long userId, Pageable pageable) {
+    return orderRepository.findByUserId(userId, pageable)
+        .map(OrderResponse::from);
+  }
+
   // 주문 상세 조회
+  @Transactional(readOnly = true)
   public OrderResponse getOrderById(Long orderId) {
     Order order = orderRepository.findById(orderId)
-        .orElseThrow(() -> new OrderException(ErrorCode.ORDER_NOT_FOUND));
+        .orElseThrow(() -> new OrderException(ORDER_NOT_FOUND));
     return OrderResponse.from(order);
   }
 
-  // 주문 취소
   @Transactional
-  public void cancelOrder(Long orderId) {
+  public OrderResponse requestCancel(Long orderId, CancelRequest request) {
     Order order = orderRepository.findById(orderId)
-        .orElseThrow(() -> new OrderException(ErrorCode.ORDER_NOT_FOUND));
+        .orElseThrow(() -> new OrderException(ORDER_NOT_FOUND));
 
-    order.cancel();
+    cancelPolicy.validate(order);
+    transitionPolicy.validateTransition(order.getStatus(), CANCEL_REQUESTED);
 
-    // TODO: 재고 복구 로직은 Stock 서비스로 분리 필요
+    order.changeStatus(CANCEL_REQUESTED);
+    return OrderResponse.from(order);
+  }
+
+  @Transactional
+  public OrderResponse requestReturn(Long orderId, ReturnRequest request) {
+    Order order = orderRepository.findById(orderId)
+        .orElseThrow(() -> new OrderException(ORDER_NOT_FOUND));
+
+    returnPolicy.validate(order);
+    transitionPolicy.validateTransition(order.getStatus(), RETURN_REQUESTED);
+
+    order.changeStatus(RETURN_REQUESTED);
+    return OrderResponse.from(order);
   }
 }
