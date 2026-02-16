@@ -40,6 +40,10 @@ public class Order extends BaseEntity {
   @Column(name = "ordered_at", nullable = false)
   private LocalDateTime orderedAt;
 
+  @Column(name = "delivered_at")
+  private LocalDateTime deliveredAt;
+
+  @Builder.Default
   @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<OrderItem> orderItems = new ArrayList<>();
 
@@ -70,13 +74,12 @@ public class Order extends BaseEntity {
     return order;
   }
 
-  public void cancel() {
-    if (this.status == OrderStatus.CANCELED) {
-      throw new IllegalStateException("이미 취소된 주문입니다.");
-    }
-    this.status = OrderStatus.CANCELED;
-    for (OrderItem orderItem : orderItems) {
-      orderItem.cancel();
-    }
+  public void changeStatus(OrderStatus next) {
+    this.status = next;
+  }
+
+  public void deliver() {
+    this.status = OrderStatus.DELIVERED;
+    this.deliveredAt = LocalDateTime.now();
   }
 }

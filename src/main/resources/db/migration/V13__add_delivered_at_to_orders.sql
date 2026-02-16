@@ -1,0 +1,1 @@
+ALTER TABLE orders ADD COLUMN delivered_at DATETIME NULL COMMENT '배송완료 일시 (반품 기한 기준점)';
