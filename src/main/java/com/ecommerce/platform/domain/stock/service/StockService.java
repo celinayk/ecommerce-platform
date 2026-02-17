@@ -34,4 +34,21 @@ public class StockService {
     return StockResponse.from(stock);
   }
 
+  // 주문 생성 시 호출 > 재고 차감
+  @Transactional
+  public void deduct(Long productId, int quantity) {
+    Stock stock = stockRepository.findByProductIdWithLock(productId)
+        .orElseThrow(() -> new StockException(ErrorCode.STOCK_NOT_FOUND));
+    stock.decrease(quantity);
+  }
+
+  // 취소/반품 완료 시 호출 > 재고 복구
+  @Transactional
+  public void restore(Long productId, int quantity) {
+    Stock stock = stockRepository.findByProductIdWithLock(productId)
+        .orElseThrow(() -> new StockException(ErrorCode.STOCK_NOT_FOUND));
+    stock.increase(quantity);
+  }
+
+
 }

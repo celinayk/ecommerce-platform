@@ -1,6 +1,7 @@
 package com.ecommerce.platform.domain.refund.service;
 
 import com.ecommerce.platform.domain.order.entity.Order;
+import com.ecommerce.platform.domain.order.entity.OrderItem;
 import com.ecommerce.platform.domain.order.entity.OrderStatus;
 import com.ecommerce.platform.domain.order.exception.OrderException;
 import com.ecommerce.platform.domain.order.repository.OrderRepository;
@@ -10,6 +11,7 @@ import com.ecommerce.platform.domain.refund.entity.Refund;
 import com.ecommerce.platform.domain.refund.entity.RefundStatus;
 import com.ecommerce.platform.domain.refund.exception.RefundException;
 import com.ecommerce.platform.domain.refund.repository.RefundRepository;
+import com.ecommerce.platform.domain.stock.service.StockService;
 import com.ecommerce.platform.domain.user.entity.User;
 import com.ecommerce.platform.domain.user.exception.UserException;
 import com.ecommerce.platform.domain.user.repository.UserRepository;
@@ -30,6 +32,7 @@ public class RefundService {
   private final RefundRepository refundRepository;
   private final OrderRepository orderRepository;
   private final UserRepository userRepository;
+  private final StockService stockService;
 
   @Transactional
   public RefundResponse createRefund(RefundCreateRequest refundCreateRequest) {
@@ -115,12 +118,13 @@ public class RefundService {
     // 2. 환불 승인
     refund.approve();
 
-    // TODO: 재고 복구 로직은 Stock 도메인 구현 후 추가 필요
+    //  재고 복구
+    Order order = refund.getOrder();
+    for (OrderItem item : order.getOrderItems()) {
+      stockService.restore(item.getProduct().getId(), item.getQuantity());
+    }
 
-    // 3. 환불 저장
-    Refund savedRefund = refundRepository.save(refund);
-
-    return RefundResponse.from(savedRefund);
+    return RefundResponse.from(refundRepository.save(refund));
   }
 
   // 환불 거절
