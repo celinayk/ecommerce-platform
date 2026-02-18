@@ -46,7 +46,7 @@ class ProductServiceTest {
   void 상품등록() {
     // given
     ProductCreateRequest request = ProductCreateRequest.builder()
-        .sellerId(1L)
+
         .name("테스트 상품")
         .description("테스트 상품 설명")
         .price(new BigDecimal("10000"))
@@ -66,7 +66,7 @@ class ProductServiceTest {
     // given
     for (int i = 1; i <= 15; i++) {
       Product product = Product.builder()
-          .sellerId(1L)
+  
           .name("상품" + i)
           .price(new BigDecimal(1000 * i))
           .build();
@@ -84,7 +84,7 @@ class ProductServiceTest {
   void id로상품조회() {
     // given
     Product product = Product.builder()
-        .sellerId(1L)
+
         .name("조회 테스트 상품")
         .price(new BigDecimal("5000"))
         .build();
@@ -109,7 +109,7 @@ class ProductServiceTest {
   void 상품수정() {
     // given
     Product product = Product.builder()
-        .sellerId(1L)
+
         .name("수정 전 상품")
         .price(new BigDecimal("5000"))
         .build();
@@ -135,7 +135,7 @@ class ProductServiceTest {
   void 상품삭제() {
     // given
     Product product = Product.builder()
-        .sellerId(1L)
+
         .name("삭제할 상품")
         .price(new BigDecimal("3000"))
         .build();
