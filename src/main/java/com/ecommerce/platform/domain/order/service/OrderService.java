@@ -125,6 +125,7 @@ public class OrderService {
     cancelPolicy.validate(order);
     transitionPolicy.validateTransition(order.getStatus(), CANCEL_REQUESTED);
 
+    recordHistory(order, order.getStatus(), CANCEL_REQUESTED, request.getReason());
     order.changeStatus(CANCEL_REQUESTED);
     return OrderResponse.from(order);
   }
@@ -137,6 +138,7 @@ public class OrderService {
     returnPolicy.validate(order);
     transitionPolicy.validateTransition(order.getStatus(), RETURN_REQUESTED);
 
+    recordHistory(order, order.getStatus(), RETURN_REQUESTED, request.getReason());
     order.changeStatus(RETURN_REQUESTED);
     return OrderResponse.from(order);
   }
@@ -148,6 +150,7 @@ public class OrderService {
         .orElseThrow(() -> new OrderException(ORDER_NOT_FOUND));
 
     transitionPolicy.validateTransition(order.getStatus(), CONFIRMED);
+    recordHistory(order, order.getStatus(), CONFIRMED, "주문 확인");
     order.changeStatus(CONFIRMED);
     return OrderResponse.from(order);
   }
@@ -165,6 +168,7 @@ public class OrderService {
       stockService.restore(orderItem.getProduct().getId(), orderItem.getQuantity());
     }
 
+    recordHistory(order, order.getStatus(), CANCELED, "취소 승인");
     order.changeStatus(CANCELED);
     return OrderResponse.from(order);
   }
@@ -176,6 +180,7 @@ public class OrderService {
         .orElseThrow(() -> new OrderException(ORDER_NOT_FOUND));
 
     transitionPolicy.validateTransition(order.getStatus(), RETURN_IN_PROGRESS);
+    recordHistory(order, order.getStatus(), RETURN_IN_PROGRESS, "반품 승인");
     order.changeStatus(RETURN_IN_PROGRESS);
     return OrderResponse.from(order);
   }
@@ -193,6 +198,7 @@ public class OrderService {
       stockService.restore(item.getProduct().getId(), item.getQuantity());
     }
 
+    recordHistory(order, order.getStatus(), RETURN_COMPLETED, "반품 완료");
     order.changeStatus(RETURN_COMPLETED);
     return OrderResponse.from(order);
   }

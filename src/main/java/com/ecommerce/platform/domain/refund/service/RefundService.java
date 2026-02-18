@@ -1,7 +1,6 @@
 package com.ecommerce.platform.domain.refund.service;
 
 import com.ecommerce.platform.domain.order.entity.Order;
-import com.ecommerce.platform.domain.order.entity.OrderItem;
 import com.ecommerce.platform.domain.order.entity.OrderStatus;
 import com.ecommerce.platform.domain.order.exception.OrderException;
 import com.ecommerce.platform.domain.order.repository.OrderRepository;
@@ -11,7 +10,6 @@ import com.ecommerce.platform.domain.refund.entity.Refund;
 import com.ecommerce.platform.domain.refund.entity.RefundStatus;
 import com.ecommerce.platform.domain.refund.exception.RefundException;
 import com.ecommerce.platform.domain.refund.repository.RefundRepository;
-import com.ecommerce.platform.domain.stock.service.StockService;
 import com.ecommerce.platform.domain.user.entity.User;
 import com.ecommerce.platform.domain.user.exception.UserException;
 import com.ecommerce.platform.domain.user.repository.UserRepository;
@@ -32,8 +30,6 @@ public class RefundService {
   private final RefundRepository refundRepository;
   private final OrderRepository orderRepository;
   private final UserRepository userRepository;
-  private final StockService stockService;
-
   @Transactional
   public RefundResponse createRefund(RefundCreateRequest refundCreateRequest) {
     // 1. 사용자 조회
@@ -115,14 +111,8 @@ public class RefundService {
     Refund refund = refundRepository.findById(refundId)
         .orElseThrow(() -> new RefundException(ErrorCode.REFUND_NOT_FOUND));
 
-    // 2. 환불 승인
+    // 2. 환불 승인 (재고 복구는 OrderService의 취소/반품 흐름에서 처리)
     refund.approve();
-
-    //  재고 복구
-    Order order = refund.getOrder();
-    for (OrderItem item : order.getOrderItems()) {
-      stockService.restore(item.getProduct().getId(), item.getQuantity());
-    }
 
     return RefundResponse.from(refundRepository.save(refund));
   }
