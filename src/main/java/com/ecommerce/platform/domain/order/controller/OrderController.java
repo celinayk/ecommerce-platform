@@ -70,4 +70,24 @@ public class OrderController {
     OrderResponse response = orderService.requestReturn(id, request);
     return ResponseEntity.ok(response);
   }
+
+
+  // 취소 승인 (관리자)
+  @PostMapping("/{id}/approve-cancel")
+  public ResponseEntity<OrderResponse> approveCancel(@PathVariable Long id) {
+    return ResponseEntity.ok(orderService.approveCancel(id));
+  }
+
+  // 반품 승인 (관리자)
+  @PostMapping("/{id}/approve-return")
+  public ResponseEntity<OrderResponse> approveReturn(@PathVariable Long id) {
+    return ResponseEntity.ok(orderService.approveReturn(id));
+  }
+
+  // 반품 완료 (관리자)
+  @PostMapping("/{id}/complete-return")
+  public ResponseEntity<OrderResponse> completeReturn(@PathVariable Long id) {
+    return ResponseEntity.ok(orderService.completeReturn(id));
+  }
+
 }

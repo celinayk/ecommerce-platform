@@ -8,6 +8,7 @@ import com.ecommerce.platform.domain.order.repository.OrderRepository;
 import com.ecommerce.platform.domain.refund.dto.RefundCreateRequest;
 import com.ecommerce.platform.domain.refund.dto.RefundResponse;
 import com.ecommerce.platform.domain.refund.entity.Refund;
+import com.ecommerce.platform.domain.payment.entity.PaymentStatus;
 import com.ecommerce.platform.domain.refund.entity.RefundStatus;
 import com.ecommerce.platform.domain.refund.exception.RefundException;
 import com.ecommerce.platform.domain.refund.repository.RefundRepository;
@@ -118,10 +119,20 @@ public class RefundService {
     // 2. 환불 승인
     refund.approve();
 
-    //  재고 복구
-    Order order = refund.getOrder();
-    for (OrderItem item : order.getOrderItems()) {
-      stockService.restore(item.getProduct().getId(), item.getQuantity());
+    // 3. 재고 복구: 수동 환불(payment == null)만 복구
+    //    자동 환불(취소/반품)은 approveCancel/completeReturn에서 이미 복구됨
+    if (refund.getPayment() == null) {
+      Order order = refund.getOrder();
+      for (OrderItem item : order.getOrderItems()) {
+        stockService.restore(item.getProduct().getId(), item.getQuantity());
+      }
+    }
+
+    // 4. Payment REFUNDED: 반품 자동 환불(payment 있고 COMPLETED 상태)만
+    //    취소 환불은 payment가 이미 CANCELED라 스킵
+    if (refund.getPayment() != null
+        && refund.getPayment().getStatus() == PaymentStatus.COMPLETED) {
+      refund.getPayment().markAsRefunded();
     }
 
     return RefundResponse.from(refundRepository.save(refund));

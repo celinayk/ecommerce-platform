@@ -2,6 +2,7 @@ package com.ecommerce.platform.domain.refund.entity;
 
 import com.ecommerce.platform.domain.common.BaseEntity;
 import com.ecommerce.platform.domain.order.entity.Order;
+import com.ecommerce.platform.domain.payment.entity.Payment;
 import com.ecommerce.platform.domain.refund.exception.RefundException;
 import com.ecommerce.platform.domain.user.entity.User;
 import com.ecommerce.platform.global.common.response.ErrorCode;
@@ -27,6 +28,10 @@ public class Refund extends BaseEntity {
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "order_id", nullable = false)
   private Order order;
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "payment_id")
+  private Payment payment;
 
   @Column(length = 500)
   private String reason;
