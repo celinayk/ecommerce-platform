@@ -33,7 +33,7 @@ public class PaymentService {
   public PaymentResponse confirmPayment(Long orderId, PaymentMethod method) {
     // 1. 주문 조회
     Order order = orderRepository.findById(orderId)
-        .orElseThrow(() -> new PaymentException(ErrorCode.PAYMENT_NOT_FOUND));
+        .orElseThrow(() -> new PaymentException(ErrorCode.ORDER_NOT_FOUND));
 
     // 2. 이미 결제된 주문인지 확인
     if (paymentRepository.existsByOrderId(order.getId())) {
@@ -62,9 +62,10 @@ public class PaymentService {
   // 2. approveCancel 시 호출 — Payment CANCELED + Refund 자동 생성
   @Transactional
   public void cancelPayment(Order order) {
-    // 1. 이 주문의 Payment 조회 (없으면 예외)
+    // 1. 이 주문의 Payment 조회 (없으면 미결제 주문이므로 그냥 리턴)
     Payment payment = paymentRepository.findByOrderId(order.getId())
-        .orElseThrow(() -> new PaymentException(ErrorCode.PAYMENT_NOT_FOUND));
+        .orElse(null);
+    if (payment == null) return;
 
     // 2. 상태 변경
     payment.cancel();

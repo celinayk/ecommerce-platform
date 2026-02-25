@@ -5,6 +5,7 @@ import com.ecommerce.platform.domain.payment.dto.PaymentResponse;
 import com.ecommerce.platform.domain.payment.service.PaymentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,9 +32,8 @@ public class PaymentController {
   @PostMapping("/confirm")
   public ResponseEntity<PaymentResponse> confirmPayment(
       @Valid @RequestBody PaymentCreateRequest request) {
-    return ResponseEntity.ok(
-        paymentService.confirmPayment(request.getOrderId(), request.getPaymentMethod())
-    );
+    return ResponseEntity.status(HttpStatus.CREATED)
+        .body(paymentService.confirmPayment(request.getOrderId(), request.getPaymentMethod()));
   }
 
 }
