@@ -43,7 +43,14 @@ public enum ErrorCode {
   CART_ITEM_ALREADY_EXISTS(400, 6003, "이미 장바구니에 있는 상품입니다."),
 
   INSUFFICIENT_STOCK(404, 7001, "재고가 부족합니다."),
-  STOCK_NOT_FOUND(404, 7002, "재고 정보를 찾을 수 없습니다.");
+  STOCK_NOT_FOUND(404, 7002, "재고 정보를 찾을 수 없습니다."),
+
+  // 결제 (8xxx)
+  PAYMENT_NOT_FOUND(404, 8001, "존재하지 않는 결제 내역입니다."),
+  PAYMENT_ALREADY_EXISTS(400, 8002, "이미 결제된 주문입니다."),
+  PAYMENT_ALREADY_PROCESSED(400, 8003, "이미 처리된 결제입니다."),
+  PAYMENT_CANNOT_BE_CANCELED(400, 8004, "완료된 결제만 취소할 수 있습니다."),
+  PAYMENT_CANNOT_BE_REFUNDED(400, 8005, "완료된 결제만 환불 처리할 수 있습니다.");
 
 
   private final int httpStatus;

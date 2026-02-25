@@ -71,11 +71,6 @@ public class OrderController {
     return ResponseEntity.ok(response);
   }
 
-  // 주문 확인 (관리자)
-  @PostMapping("/{id}/confirm")
-  public ResponseEntity<OrderResponse> confirmOrder(@PathVariable Long id) {
-    return ResponseEntity.ok(orderService.confirmOrder(id));
-  }
 
   // 취소 승인 (관리자)
   @PostMapping("/{id}/approve-cancel")

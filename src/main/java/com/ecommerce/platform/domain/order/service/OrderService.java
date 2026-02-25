@@ -15,6 +15,7 @@ import com.ecommerce.platform.domain.order.policy.ReturnPolicy;
 import com.ecommerce.platform.domain.order.repository.OrderHistoryRepository;
 import com.ecommerce.platform.domain.order.repository.OrderItemRepository;
 import com.ecommerce.platform.domain.order.repository.OrderRepository;
+import com.ecommerce.platform.domain.payment.service.PaymentService;
 import com.ecommerce.platform.domain.product.entity.Product;
 import com.ecommerce.platform.domain.product.exception.ProductException;
 import com.ecommerce.platform.domain.product.repository.ProductRepository;
@@ -48,6 +49,7 @@ public class OrderService {
   private final ReturnPolicy returnPolicy;
   private final StockService stockService;
   private final OrderHistoryRepository orderHistoryRepository;
+  private final PaymentService paymentService;
 
   private void recordHistory(Order order, OrderStatus before, OrderStatus after, String reason) {
     OrderHistory history = OrderHistory.builder()
@@ -141,16 +143,6 @@ public class OrderService {
     return OrderResponse.from(order);
   }
 
-  // 주문 확인 (PENDING → CONFIRMED)
-  @Transactional
-  public OrderResponse confirmOrder(Long orderId) {
-    Order order = orderRepository.findById(orderId)
-        .orElseThrow(() -> new OrderException(ORDER_NOT_FOUND));
-
-    transitionPolicy.validateTransition(order.getStatus(), CONFIRMED);
-    order.changeStatus(CONFIRMED);
-    return OrderResponse.from(order);
-  }
 
   // 취소 승인 (CANCEL_REQUESTED → CANCELED + 재고 복구)
   @Transactional
@@ -166,6 +158,7 @@ public class OrderService {
     }
 
     order.changeStatus(CANCELED);
+    paymentService.cancelPayment(order);
     return OrderResponse.from(order);
   }
 
@@ -194,6 +187,7 @@ public class OrderService {
     }
 
     order.changeStatus(RETURN_COMPLETED);
+    paymentService.refundPayment(order);
     return OrderResponse.from(order);
   }
 
