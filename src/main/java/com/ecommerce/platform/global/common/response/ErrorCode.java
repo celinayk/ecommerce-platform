@@ -20,6 +20,7 @@ public enum ErrorCode {
   // 주문 (3xxx)
   ORDER_NOT_FOUND(404, 3001, "존재하지 않는 주문입니다."),
   ORDER_ALREADY_CANCELLED(400, 3002, "이미 취소된 주문입니다."),
+  ORDER_ITEM_NOT_FOUND(404, 3003, "존재하지 않는 주문 항목입니다."),
 
   // 카테고리 (4xxx)
   CATEGORY_NOT_FOUND(404, 4001, "존재하지 않는 카테고리입니다."),
@@ -50,7 +51,19 @@ public enum ErrorCode {
   PAYMENT_ALREADY_EXISTS(400, 8002, "이미 결제된 주문입니다."),
   PAYMENT_ALREADY_PROCESSED(400, 8003, "이미 처리된 결제입니다."),
   PAYMENT_CANNOT_BE_CANCELED(400, 8004, "완료된 결제만 취소할 수 있습니다."),
-  PAYMENT_CANNOT_BE_REFUNDED(400, 8005, "완료된 결제만 환불 처리할 수 있습니다.");
+  PAYMENT_CANNOT_BE_REFUNDED(400, 8005, "완료된 결제만 환불 처리할 수 있습니다."),
+
+  // 취소 (9xxx)
+  CANCEL_NOT_FOUND(404, 9001, "존재하지 않는 취소 요청입니다."),
+  CANCEL_ALREADY_PROCESSED(400, 9002, "이미 처리된 취소 요청입니다."),
+  CANCEL_NOT_ALLOWED(400, 9003, "취소할 수 없는 주문 상태입니다."),
+  CANCEL_ALREADY_EXISTS(400, 9004, "이미 취소 요청된 주문입니다."),
+
+  // 반품 (10xxx)
+  RETURN_NOT_FOUND(404, 10001, "존재하지 않는 반품 요청입니다."),
+  RETURN_ALREADY_PROCESSED(400, 10002, "이미 처리된 반품 요청입니다."),
+  RETURN_NOT_ALLOWED(400, 10003, "반품할 수 없는 주문 상태입니다."),
+  RETURN_ALREADY_EXISTS(400, 10004, "이미 반품 요청된 주문입니다.");
 
 
   private final int httpStatus;

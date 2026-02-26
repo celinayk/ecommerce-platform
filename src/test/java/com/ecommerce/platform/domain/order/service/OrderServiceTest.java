@@ -1,6 +1,6 @@
 package com.ecommerce.platform.domain.order.service;
 
-import com.ecommerce.platform.domain.order.dto.CancelRequest;
+import com.ecommerce.platform.domain.cancel.dto.CancelRequest;
 import com.ecommerce.platform.domain.order.dto.OrderRequest;
 import com.ecommerce.platform.domain.order.dto.OrderResponse;
 import com.ecommerce.platform.domain.order.entity.OrderStatus;

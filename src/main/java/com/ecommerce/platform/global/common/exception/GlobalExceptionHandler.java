@@ -1,11 +1,13 @@
 package com.ecommerce.platform.global.common.exception;
 
+import com.ecommerce.platform.domain.cancel.exception.CancelException;
 import com.ecommerce.platform.domain.cart.exception.CartException;
 import com.ecommerce.platform.domain.category.exception.CategoryException;
 import com.ecommerce.platform.domain.order.exception.OrderException;
 import com.ecommerce.platform.domain.payment.exception.PaymentException;
 import com.ecommerce.platform.domain.product.exception.ProductException;
 import com.ecommerce.platform.domain.refund.exception.RefundException;
+import com.ecommerce.platform.domain.returns.exception.ReturnException;
 import com.ecommerce.platform.domain.user.exception.UserException;
 import com.ecommerce.platform.global.common.response.ErrorCode;
 import lombok.extern.slf4j.Slf4j;
@@ -118,6 +120,36 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(PaymentException.class)
   public ResponseEntity<Map<String, Object>> handlePaymentException(PaymentException e) {
     log.error("PaymentException: code={}, message={}", e.getErrorCode().getCode(), e.getMessage());
+
+    Map<String, Object> errorResponse = new HashMap<>();
+    errorResponse.put("timestamp", LocalDateTime.now());
+    errorResponse.put("httpStatus", e.getErrorCode().getHttpStatus());
+    errorResponse.put("code", e.getErrorCode().getCode());
+    errorResponse.put("message", e.getMessage());
+
+    return ResponseEntity
+        .status(HttpStatus.OK)
+        .body(errorResponse);
+  }
+
+  @ExceptionHandler(CancelException.class)
+  public ResponseEntity<Map<String, Object>> handleCancelException(CancelException e) {
+    log.error("CancelException: code={}, message={}", e.getErrorCode().getCode(), e.getMessage());
+
+    Map<String, Object> errorResponse = new HashMap<>();
+    errorResponse.put("timestamp", LocalDateTime.now());
+    errorResponse.put("httpStatus", e.getErrorCode().getHttpStatus());
+    errorResponse.put("code", e.getErrorCode().getCode());
+    errorResponse.put("message", e.getMessage());
+
+    return ResponseEntity
+        .status(HttpStatus.OK)
+        .body(errorResponse);
+  }
+
+  @ExceptionHandler(ReturnException.class)
+  public ResponseEntity<Map<String, Object>> handleReturnException(ReturnException e) {
+    log.error("ReturnException: code={}, message={}", e.getErrorCode().getCode(), e.getMessage());
 
     Map<String, Object> errorResponse = new HashMap<>();
     errorResponse.put("timestamp", LocalDateTime.now());
