@@ -74,6 +74,7 @@ public class CancelService {
     cancel.approve();  // 상태 변경 + approvedAt 기록
 
     Order order = cancel.getOrder();
+    transitionPolicy.validateTransition(order.getStatus(), CANCELED);
     for (OrderItem orderItem : order.getOrderItems()) {
       stockService.restore(orderItem.getProduct().getId(), orderItem.getQuantity());
     }

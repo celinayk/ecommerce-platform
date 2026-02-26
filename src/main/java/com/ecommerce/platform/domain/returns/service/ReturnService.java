@@ -50,8 +50,8 @@ public class ReturnService {
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
 
-    OrderItem orderItem = orderItemRepository.findById(request.getOrderItemId())
-        .orElseThrow(() -> new OrderException(ORDER_NOT_FOUND));
+    OrderItem orderItem = orderItemRepository.findByIdAndOrderId(request.getOrderItemId(), orderId)
+        .orElseThrow(() -> new OrderException(ErrorCode.ORDER_ITEM_NOT_FOUND));
 
     returnPolicy.validate(order);
     transitionPolicy.validateTransition(order.getStatus(), RETURN_REQUESTED);

@@ -20,6 +20,7 @@ public enum ErrorCode {
   // 주문 (3xxx)
   ORDER_NOT_FOUND(404, 3001, "존재하지 않는 주문입니다."),
   ORDER_ALREADY_CANCELLED(400, 3002, "이미 취소된 주문입니다."),
+  ORDER_ITEM_NOT_FOUND(404, 3003, "존재하지 않는 주문 항목입니다."),
 
   // 카테고리 (4xxx)
   CATEGORY_NOT_FOUND(404, 4001, "존재하지 않는 카테고리입니다."),
