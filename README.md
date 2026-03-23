@@ -10,7 +10,7 @@
 * **학습 성과**: SQL Mapper를 통한 DB 핸들링, 기초 CRUD API 설계 학습
 * **기록**: 기본적인 도메인 기능(회원, 상품, 주문, 환불)을 완성했습니다.
 
-### 🔹 v2. Technical Deep-Dive (2026.02 - Present)
+### 🔹 v2. Technical Deep-Dive (2026.02)
 **"객체 지향적 설계와 고도화된 기술 도입"**
 * **핵심 기술**: Spring Data JPA, QueryDSL, Redis, Docker
 * **전환 배경**: MyBatis의 유지보수 생산성 한계를 극복하기 위해 JPA를 도입하고, 확장 가능한 아키텍처로 재설계했습니다.
@@ -34,13 +34,6 @@
   회원 관리, 상품 관리, 주문 처리 등 온라인 쇼핑몰의 핵심 기능을 구현하며,
   추후 Redis, Kafka, ElasticSearch 등을 활용한 고급 기능을 추가할 예정입니다.
 
-  ### 프로젝트 목표
-  - ✅ RESTful API 설계 및 구현
-  - ✅ 체계적인 예외 처리 및 Validation
-  - 🔜 Spring Security + JWT 인증/인가
-  - 🔜 Redis 기반 장바구니 및 캐싱
-  - 🔜 Kafka 이벤트 기반 아키텍처
-  - 🔜 토스페이먼츠 결제 연동
 
   ---
 
